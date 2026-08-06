@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NUEX — Pan-African Cyber Shield</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+  <div class="max-w-4xl mx-auto px-6 py-12">
+    <!-- Header -->
+    <header class="border-b border-slate-800 pb-8 mb-8">
+      <div class="flex items-center space-x-3 mb-2">
+        <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-mono">NUEX v1.0</span>
+        <span class="text-xs text-slate-400">Homegrown African Cyber Infrastructure</span>
+      </div>
+      <h1 class="text-4xl font-extrabold tracking-tight text-white">Pan-African Security Scanner</h1>
+      <p class="text-slate-400 mt-2">Zero jargon. Direct answers on SPF, DMARC, MX, and domain exposure.</p>
+    </header>
+
+    <!-- Search Form -->
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-xl mb-8">
+      <form id="scanForm" class="flex flex-col sm:flex-row gap-3">
+        <input 
+          type="text" 
+          id="domainInput" 
+          placeholder="Enter domain (e.g. paystack.com, flutterwave.com)" 
+          required 
+          class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
+        />
+        <button 
+          type="submit" 
+          id="scanBtn"
+          class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors flex items-center justify-center space-x-2"
+        >
+          <span>Run Audit</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Output Section -->
+    <div id="results" class="hidden space-y-6">
+      <!-- Score Overview -->
+      <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 flex items-center justify-between">
+        <div>
+          <h2 id="targetDomain" class="text-2xl font-bold text-white font-mono">example.com</h2>
+          <p class="text-slate-400 text-sm mt-1">Plain-English Cyber Audit</p>
+        </div>
+        <div class="text-right">
+          <span id="scoreBadge" class="text-4xl font-extrabold px-4 py-2 rounded-xl border">0/100</span>
+        </div>
+      </div>
+
+      <!-- Findings Cards -->
+      <div id="findingsContainer" class="space-y-4"></div>
+    </div>
+  </div>
+
+  <script>
+    const CLOUDFLARE_DOH = 'https://cloudflare-dns.com/dns-query';
+
+    async function queryDOH(name, type) {
+      try {
+        const res = await fetch(`${CLOUDFLARE_DOH}?name=${encodeURIComponent(name)}&type=${type}`, {
+          headers: { 'accept': 'application/dns-json' }
+        });
+        return await res.json();
+      } catch {
+        return { Answer: [] };
+      }
+    }
+
+    document.getElementById('scanForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const rawInput = document.getElementById('domainInput').value.trim();
+      const domain = rawInput.replace(/^(https?:\/\/)/, '').split('/')[0];
+      const scanBtn = document.getElementById('scanBtn');
+      const resultsDiv = document.getElementById('results');
+      const findingsContainer = document.getElementById('findingsContainer');
+
+      scanBtn.disabled = true;
+      scanBtn.innerText = 'Scanning...';
+      findingsContainer.innerHTML = '';
+
+      let score = 100;
+      const findings = [];
+
+      // 1. MX Check
+      const mxRes = await queryDOH(domain, 'MX');
+      if (!mxRes.Answer || mxRes.Answer.length === 0) {
+        score -= 25;
+        findings.push({
+          title: 'Mail Exchange (MX)',
+          status: 'FAIL',
+          desc: 'No mail servers detected.',
+          plain: 'Without valid MX records, scammers can easily spoof emails from your domain name.'
+        });
+      } else {
+        findings.push({
+          title: 'Mail Exchange (MX)',
+          status: 'PASS',
+          desc: `${mxRes.Answer.length} mail record(s) active.`,
+          plain: 'Mail server paths are registered properly.'
+        });
+      }
+
+      // 2. SPF Check
+      const txtRes = await queryDOH(domain, 'TXT');
+      const txtRecords = (txtRes.Answer || []).map(a => a.data.replace(/"/g, ''));
+      const spf = txtRecords.find(r => r.startsWith('v=spf1'));
+
+      if (!spf) {
+        score -= 35;
+        findings.push({
+          title: 'SPF Protection',
+          status: 'FAIL',
+          desc: 'Missing v=spf1 record.',
+          plain: 'Anyone on the internet can send unauthorized emails pretending to be your business.'
+        });
+      } else {
+        findings.push({
+          title: 'SPF Protection',
+          status: 'PASS',
+          desc: spf,
+          plain: 'Authorized email senders are declared to prevent impersonation.'
+        });
+      }
+
+      // 3. DMARC Check
+      const dmarcRes = await queryDOH(`_dmarc.${domain}`, 'TXT');
+      const dmarcTxts = (dmarcRes.Answer || []).map(a => a.data.replace(/"/g, ''));
+      const dmarc = dmarcTxts.find(r => r.startsWith('v=DMARC1'));
+
+      if (!dmarc) {
+        score -= 40;
+        findings.push({
+          title: 'DMARC Enforcement',
+          status: 'FAIL',
+          desc: 'No DMARC policy found.',
+          plain: 'Even with SPF, mail providers like Gmail won\'t know to block fraudulent emails abusing your domain.'
+        });
+      } else {
+        findings.push({
+          title: 'DMARC Enforcement',
+          status: 'PASS',
+          desc: dmarc,
+          plain: 'Active policy instructs mail servers to drop or flag spoofed emails.'
+        });
+      }
+
+      // Render
+      document.getElementById('targetDomain').innerText = domain;
+      const scoreBadge = document.getElementById('scoreBadge');
+      scoreBadge.innerText = `${Math.max(0, score)}/100`;
+
+      if (score >= 80) {
+        scoreBadge.className = 'text-4xl font-extrabold px-4 py-2 rounded-xl bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+      } else if (score >= 50) {
+        scoreBadge.className = 'text-4xl font-extrabold px-4 py-2 rounded-xl bg-amber-500/10 text-amber-400 border-amber-500/30';
+      } else {
+        scoreBadge.className = 'text-4xl font-extrabold px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 border-rose-500/30';
+      }
+
+      findings.forEach(f => {
+        const isPass = f.status === 'PASS';
+        const card = document.createElement('div');
+        card.className = `p-5 rounded-xl border bg-slate-900 ${isPass ? 'border-slate-800' : 'border-rose-900/50'}`;
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-bold text-white">${f.title}</h3>
+            <span class="px-2.5 py-1 rounded text-xs font-mono ${isPass ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">${f.status}</span>
+          </div>
+          <p class="text-xs font-mono text-slate-400 mb-2">${f.desc}</p>
+          <p class="text-sm text-slate-300 font-sans">${f.plain}</p>
+        `;
+        findingsContainer.appendChild(card);
+      });
+
+      resultsDiv.classList.remove('hidden');
+      scanBtn.disabled = false;
+      scanBtn.innerText = 'Run Audit';
+    });
+  </script>
+</body>
+</html>
