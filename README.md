@@ -6,6 +6,7 @@
 
 ## 🚀 Live Interactive Scanner
 👉 **Try NUEX Scanner Live:** `https://nuespoll.github.io/nuex-cyber/`
+👉 ![NUEX Scanner Demo](demo-screenshot.png)
 
 ---
 
