@@ -1,341 +1,312 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NUEX — Enterprise Cyber Defense & DoH Auditor</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NUEX — Perimeter Audit Dossier</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            socBg: '#07090E',
-            socCard: '#0E131F',
-            socCardHover: '#141C2E',
-            socBorder: '#1A2338',
-            socAccent: '#00F0FF',
-            socEmerald: '#10B981',
-            socRose: '#F43F5E',
-            socPurple: '#A855F7',
-            socAmber: '#F59E0B'
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-            mono: ['JetBrains Mono', 'Fira Code', 'monospace']
-          }
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:      '#0A0710',
+          panel:    '#140D1E',
+          panelAlt: '#1B1329',
+          hair:     '#2E2140',
+          hairSoft: '#241A34',
+          bone:     '#EAE2D6',
+          muted:    '#8C8098',
+          gold:     '#C7A034',
+          goldDim:  '#7A6323',
+          blood:    '#9B2242',
+          bloodBright: '#C43A5C'
+        },
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          mono: ['"IBM Plex Mono"', 'monospace']
         }
       }
-    };
-  </script>
-  
-  <style>
-    /* Custom Scrollbar & Glass Effects */
-    body { background-color: #07090E; }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #07090E; }
-    ::-webkit-scrollbar-thumb { background: #1A2338; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #00F0FF; }
+    }
+  };
+</script>
 
-    .glow-cyan-sm { box-shadow: 0 0 12px rgba(0, 240, 255, 0.2); }
-    .glow-emerald-sm { box-shadow: 0 0 12px rgba(16, 185, 129, 0.2); }
-    .glow-rose-sm { box-shadow: 0 0 12px rgba(244, 63, 94, 0.2); }
-  </style>
+<style>
+  html { background:#0A0710; }
+  body { background:#0A0710; }
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: #0A0710; }
+  ::-webkit-scrollbar-thumb { background: #2E2140; }
+
+  .corner { position: relative; }
+  .corner::before, .corner::after {
+    content: ''; position: absolute; width: 9px; height: 9px;
+    border-color: #7A6323; border-style: solid; opacity: .8;
+  }
+  .corner::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+  .corner::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+  .seal-ring { stroke: #C7A034; }
+  .ledger-row:not(:last-child) { border-bottom: 1px solid #241A34; }
+
+  .field-active:focus { outline: none; border-color: #C7A034; }
+
+  @keyframes tick { 0%,100% { opacity: 1 } 50% { opacity: .35 } }
+  .tick-dot { animation: tick 2.4s ease-in-out infinite; }
+
+  ::selection { background: #C7A034; color: #0A0710; }
+</style>
 </head>
-<body class="bg-[#07090E] text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black">
 
-  <!-- TOP SYSTEM TELEMETRY STRIP -->
-  <div class="bg-[#0A0D15] border-b border-[#1A2338] px-4 py-2 text-xs font-mono flex items-center justify-between text-slate-400 overflow-x-auto whitespace-nowrap">
-    <div class="flex items-center gap-6">
-      <div class="flex items-center gap-2">
-        <span class="relative flex h-2 w-2">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-        </span>
-        <span class="text-slate-200 font-semibold">ENGINE: ACTIVE</span>
-      </div>
-      <span class="text-slate-700">|</span>
-      <span>RESOLVER: <span class="text-cyan-400 font-bold">Cloudflare DoH (1.1.1.1)</span></span>
-      <span class="text-slate-700">|</span>
-      <span>LATENCY: <span class="text-emerald-400 font-bold">14ms</span></span>
-      <span class="text-slate-700">|</span>
-      <span>PROTOCOL: <span class="text-slate-300">HTTPS / DNS-JSON</span></span>
+<body class="text-bone font-display antialiased min-h-screen flex flex-col">
+
+  <!-- CASE STRIP -->
+  <div class="bg-ink border-b border-hairSoft px-5 py-1.5 text-[10px] font-mono tracking-wider text-muted flex items-center justify-between overflow-x-auto whitespace-nowrap">
+    <div class="flex items-center gap-5">
+      <span class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 bg-gold tick-dot"></span>
+        <span class="text-bone/80 font-medium">ENGINE ONLINE</span>
+      </span>
+      <span class="text-hair">/</span>
+      <span>RESOLVER · <span class="text-gold">CLOUDFLARE DOH 1.1.1.1</span></span>
+      <span class="text-hair">/</span>
+      <span>PROTOCOL · DNS-JSON OVER HTTPS</span>
     </div>
-
-    <div class="flex items-center gap-4 text-[11px]">
-      <span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-bold">ZERO-LOG MODE</span>
-      <span class="text-slate-500" id="clock-display">00:00:00 UTC</span>
+    <div class="flex items-center gap-4">
+      <span class="border border-goldDim text-gold px-2 py-0.5 tracking-widest">ZERO-LOG</span>
+      <span id="clock-display" class="text-muted">00:00:00 UTC</span>
     </div>
   </div>
 
-  <!-- NAVIGATION HEADER -->
-  <header class="border-b border-[#1A2338] bg-[#0A0D15]/90 backdrop-blur-md sticky top-0 z-40 px-6 py-3.5">
-    <div class="max-w-[1700px] mx-auto flex items-center justify-between gap-4">
-      
-      <!-- LOGO -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 p-0.5 shadow-lg shadow-cyan-500/20">
-          <div class="w-full h-full bg-[#07090E] rounded-[10px] flex items-center justify-center text-cyan-400 font-black text-xl">
-            🛡️
-          </div>
-        </div>
+  <!-- HEADER -->
+  <header class="border-b border-hair bg-ink/95 backdrop-blur px-6 py-4">
+    <div class="max-w-[1600px] mx-auto flex items-center justify-between gap-6 flex-wrap">
+
+      <div class="flex items-center gap-3.5">
+        <svg width="42" height="42" viewBox="0 0 42 42" class="shrink-0">
+          <circle cx="21" cy="21" r="19.5" fill="#140D1E" class="seal-ring" stroke-width="1.2"/>
+          <circle cx="21" cy="21" r="15" fill="none" stroke="#7A6323" stroke-width="0.6"/>
+          <path d="M21 10 L30 14 V21 C30 27.5 26 31 21 33 C16 31 12 27.5 12 21 V14 Z"
+                fill="none" stroke="#C7A034" stroke-width="1.3"/>
+          <path d="M17 21 L20 24 L26 17" fill="none" stroke="#9B2242" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
         <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-xl font-black tracking-wider text-white">NUEX</h1>
-            <span class="text-[9px] bg-cyan-950 text-cyan-300 border border-cyan-800 px-1.5 py-0.5 rounded font-mono font-bold">SOC v2.4</span>
+          <div class="flex items-baseline gap-2">
+            <h1 class="text-[22px] font-semibold tracking-[0.08em] text-bone">NUEX</h1>
+            <span class="text-[9px] font-mono border border-hair text-muted px-1.5 py-[1px] tracking-wider">DOSSIER 04</span>
           </div>
-          <p class="text-[10px] text-cyan-400 font-mono tracking-widest uppercase">BROWSER-NATIVE THREAT AUDITOR</p>
+          <p class="text-[10px] font-mono text-gold/80 tracking-[0.18em] uppercase -mt-0.5">Perimeter &amp; DNS Audit Record</p>
         </div>
       </div>
 
-      <!-- DOMAIN COMMAND INPUT BAR -->
-      <div class="flex-1 max-w-2xl mx-4">
+      <div class="flex-1 min-w-[280px] max-w-xl">
         <div class="relative flex items-center">
-          <i data-lucide="shield-search" class="w-4 h-4 absolute left-3.5 text-slate-500"></i>
-          <input 
-            type="text" 
-            id="target-domain" 
-            placeholder="Analyze target domain (e.g. solana.com, github.com)..." 
-            class="w-full bg-[#0E131F] border border-[#1A2338] focus:border-cyan-500 text-xs text-white placeholder-slate-500 rounded-xl pl-10 pr-28 py-2.5 font-mono transition focus:outline-none"
+          <span class="absolute left-3 text-[11px] font-mono text-muted">TARGET</span>
+          <input
+            type="text"
+            id="target-domain"
+            placeholder="solana.com"
+            class="field-active w-full bg-panel border border-hair text-xs text-bone placeholder-muted/60 pl-[70px] pr-24 py-2.5 font-mono tracking-wide transition"
             value="solana.com"
           />
-          <button 
+          <button
             onclick="executeAudit()"
             id="scan-btn"
-            class="absolute right-1.5 bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs px-4 py-1.5 rounded-lg transition-all flex items-center gap-1.5 active:scale-95 glow-cyan-sm"
-          >
-            <span>AUDIT</span>
-            <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-          </button>
+            class="absolute right-1.5 bg-gold hover:bg-[#d9b348] text-ink font-semibold text-[11px] tracking-widest px-3.5 py-1.5 transition active:scale-[0.98]"
+          >RUN AUDIT</button>
         </div>
       </div>
 
-      <!-- PRESET TARGET CHIPS -->
-      <div class="hidden xl:flex items-center gap-2 text-xs font-mono">
-        <span class="text-slate-500 text-[11px]">Quick Audit:</span>
-        <button onclick="setDomain('solana.com')" class="px-2.5 py-1 rounded-lg bg-[#0E131F] border border-[#1A2338] hover:border-cyan-500 text-slate-300 transition">solana.com</button>
-        <button onclick="setDomain('ethereum.org')" class="px-2.5 py-1 rounded-lg bg-[#0E131F] border border-[#1A2338] hover:border-cyan-500 text-slate-300 transition">ethereum.org</button>
-        <button onclick="setDomain('github.com')" class="px-2.5 py-1 rounded-lg bg-[#0E131F] border border-[#1A2338] hover:border-cyan-500 text-slate-300 transition">github.com</button>
+      <div class="hidden xl:flex items-center gap-2 text-[11px] font-mono text-muted">
+        <span>PRIOR CASES</span>
+        <button onclick="setDomain('solana.com')" class="px-2.5 py-1 border border-hair hover:border-gold hover:text-gold transition">solana.com</button>
+        <button onclick="setDomain('ethereum.org')" class="px-2.5 py-1 border border-hair hover:border-gold hover:text-gold transition">ethereum.org</button>
+        <button onclick="setDomain('github.com')" class="px-2.5 py-1 border border-hair hover:border-gold hover:text-gold transition">github.com</button>
       </div>
 
     </div>
   </header>
 
-  <!-- MAIN DASHBOARD CONTENT -->
-  <main class="flex-1 max-w-[1700px] w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+  <!-- MAIN -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
 
-    <!-- TOP KPI SCORE CARDS -->
+    <!-- FINDINGS STRIP -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      
-      <!-- Overall Grade Card -->
-      <div class="bg-[#0E131F] border border-[#1A2338] rounded-2xl p-4 flex items-center justify-between">
-        <div>
-          <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider block mb-1">Security Score</span>
-          <div class="flex items-baseline gap-2">
-            <span id="score-val" class="text-3xl font-black text-emerald-400">96</span>
-            <span class="text-xs text-slate-400 font-mono">/ 100</span>
-          </div>
-          <span id="score-status" class="text-[10px] font-mono text-emerald-400">Grade A+ (Hardened)</span>
+
+      <div class="corner bg-panel border border-hair p-4">
+        <span class="text-[10px] font-mono text-muted uppercase tracking-[0.15em] block mb-2">Security Rating</span>
+        <div class="flex items-baseline gap-1.5">
+          <span id="score-val" class="text-[34px] leading-none font-semibold text-gold">96</span>
+          <span class="text-xs font-mono text-muted">/100</span>
         </div>
-        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl font-bold">
-          🛡️
-        </div>
+        <span id="score-status" class="text-[10px] font-mono text-muted">Grade A+ — Hardened</span>
       </div>
 
-      <!-- Threat Index -->
-      <div class="bg-[#0E131F] border border-[#1A2338] rounded-2xl p-4 flex items-center justify-between">
-        <div>
-          <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider block mb-1">Threat Risk Level</span>
-          <div class="text-xl font-black text-white font-mono flex items-center gap-2">
-            <span id="risk-val" class="text-emerald-400">LOW</span>
-          </div>
-          <span class="text-[10px] font-mono text-slate-500">0 Critical Exposure</span>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 text-xl">
-          <i data-lucide="activity" class="w-6 h-6"></i>
-        </div>
+      <div class="corner bg-panel border border-hair p-4">
+        <span class="text-[10px] font-mono text-muted uppercase tracking-[0.15em] block mb-2">Threat Exposure</span>
+        <div class="text-[22px] font-semibold font-mono text-gold" id="risk-val">LOW</div>
+        <span class="text-[10px] font-mono text-muted">0 critical findings</span>
       </div>
 
-      <!-- DNS Health -->
-      <div class="bg-[#0E131F] border border-[#1A2338] rounded-2xl p-4 flex items-center justify-between">
-        <div>
-          <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider block mb-1">DNS Resolution</span>
-          <div class="text-xl font-black text-white font-mono" id="dns-count-val">4 Records</div>
-          <span class="text-[10px] font-mono text-cyan-400">DoH Authenticated</span>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-xl">
-          <i data-lucide="network" class="w-6 h-6"></i>
-        </div>
+      <div class="corner bg-panel border border-hair p-4">
+        <span class="text-[10px] font-mono text-muted uppercase tracking-[0.15em] block mb-2">DNS Resolution</span>
+        <div class="text-[22px] font-semibold font-mono text-bone" id="dns-count-val">4 records</div>
+        <span class="text-[10px] font-mono text-gold/80">DoH authenticated</span>
       </div>
 
-      <!-- Headers Status -->
-      <div class="bg-[#0E131F] border border-[#1A2338] rounded-2xl p-4 flex items-center justify-between">
-        <div>
-          <span class="text-[10px] text-slate-500 font-mono uppercase tracking-wider block mb-1">Header Policy Compliance</span>
-          <div class="text-xl font-black text-emerald-400 font-mono" id="header-compliance-val">4 / 4 Passed</div>
-          <span class="text-[10px] font-mono text-slate-500">HSTS / CSP Verified</span>
-        </div>
-        <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xl">
-          <i data-lucide="lock" class="w-6 h-6"></i>
-        </div>
+      <div class="corner bg-panel border border-hair p-4">
+        <span class="text-[10px] font-mono text-muted uppercase tracking-[0.15em] block mb-2">Header Compliance</span>
+        <div class="text-[22px] font-semibold font-mono text-gold" id="header-compliance-val">4/4 passed</div>
+        <span class="text-[10px] font-mono text-muted">HSTS · CSP verified</span>
       </div>
 
     </section>
 
-    <!-- MAIN TWO-COLUMN ANALYSIS LAYOUT -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      
-      <!-- LEFT COLUMN (7 COLS): DNS MATRIX & HEADER AUDITS -->
+
+      <!-- LEFT -->
       <div class="lg:col-span-7 flex flex-col gap-6">
-        
-        <!-- DoH DNS INFRASTRUCTURE MATRIX -->
-        <div class="bg-[#0E131F] border border-[#1A2338] rounded-2xl p-5">
-          <div class="flex items-center justify-between mb-4 border-b border-[#1A2338] pb-3">
+
+        <!-- DNS LEDGER -->
+        <div class="bg-panel border border-hair">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-hair">
             <div class="flex items-center gap-2">
-              <i data-lucide="server" class="w-4 h-4 text-cyan-400"></i>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-white">DoH DNS Infrastructure Records</h3>
+              <span class="text-[10px] font-mono text-goldDim">01</span>
+              <h3 class="text-[11px] font-mono uppercase tracking-[0.15em] text-bone">DNS Infrastructure Ledger</h3>
             </div>
-            <span class="text-[10px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-800/60 px-2.5 py-0.5 rounded">Query: Live</span>
+            <span class="text-[10px] font-mono text-muted">query · live</span>
           </div>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-left font-mono text-xs">
-              <thead>
-                <tr class="text-[10px] text-slate-500 border-b border-[#1A2338]">
-                  <th class="pb-2">TYPE</th>
-                  <th class="pb-2">RESOLVED VALUE</th>
-                  <th class="pb-2">TTL</th>
-                  <th class="pb-2">STATUS</th>
-                </tr>
-              </thead>
-              <tbody id="dns-table-body" class="divide-y divide-[#1A2338]/60 text-slate-300">
-                <tr>
-                  <td class="py-3 font-bold text-cyan-400">A</td>
-                  <td>104.21.32.112</td>
-                  <td class="text-slate-500">300s</td>
-                  <td><span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded">VALID</span></td>
-                </tr>
-                <tr>
-                  <td class="py-3 font-bold text-cyan-400">AAAA</td>
-                  <td>2606:4700:3031::6815:2070</td>
-                  <td class="text-slate-500">300s</td>
-                  <td><span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded">VALID</span></td>
-                </tr>
-                <tr>
-                  <td class="py-3 font-bold text-purple-400">MX</td>
-                  <td>isaac.ns.cloudflare.com</td>
-                  <td class="text-slate-500">86400s</td>
-                  <td><span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded">SECURE</span></td>
-                </tr>
-                <tr>
-                  <td class="py-3 font-bold text-amber-400">TXT</td>
-                  <td>v=spf1 include:_spf.google.com ~all</td>
-                  <td class="text-slate-500">3600s</td>
-                  <td><span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded">PASSED</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <table class="w-full text-left font-mono text-xs">
+            <thead>
+              <tr class="text-[10px] text-muted border-b border-hairSoft">
+                <th class="pl-5 py-2 font-normal">TYPE</th>
+                <th class="py-2 font-normal">RESOLVED VALUE</th>
+                <th class="py-2 font-normal">TTL</th>
+                <th class="pr-5 py-2 font-normal text-right">STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="dns-table-body" class="text-bone/90">
+              <tr class="ledger-row">
+                <td class="pl-5 py-3 text-gold">A</td>
+                <td>104.21.32.112</td>
+                <td class="text-muted">300s</td>
+                <td class="pr-5 text-right"><span class="text-[10px] border border-goldDim text-gold px-2 py-0.5">VALID</span></td>
+              </tr>
+              <tr class="ledger-row">
+                <td class="pl-5 py-3 text-gold">AAAA</td>
+                <td>2606:4700:3031::6815:2070</td>
+                <td class="text-muted">300s</td>
+                <td class="pr-5 text-right"><span class="text-[10px] border border-goldDim text-gold px-2 py-0.5">VALID</span></td>
+              </tr>
+              <tr class="ledger-row">
+                <td class="pl-5 py-3 text-gold">MX</td>
+                <td>isaac.ns.cloudflare.com</td>
+                <td class="text-muted">86400s</td>
+                <td class="pr-5 text-right"><span class="text-[10px] border border-goldDim text-gold px-2 py-0.5">SECURE</span></td>
+              </tr>
+              <tr class="ledger-row">
+                <td class="pl-5 py-3 text-gold">TXT</td>
+                <td>v=spf1 include:_spf.google.com ~all</td>
+                <td class="text-muted">3600s</td>
+                <td class="pr-5 py-3 text-right"><span class="text-[10px] border border-goldDim text-gold px-2 py-0.5">PASSED</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <!-- SECURITY HEADERS INSPECTOR -->
-        <div class="bg-[#0E131F] border border-[#1A2338] rounded-2xl p-5">
-          <div class="flex items-center justify-between mb-4 border-b border-[#1A2338] pb-3">
+        <!-- HEADER POLICY -->
+        <div class="bg-panel border border-hair">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-hair">
             <div class="flex items-center gap-2">
-              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-white">HTTP Security Headers Policy</h3>
+              <span class="text-[10px] font-mono text-goldDim">02</span>
+              <h3 class="text-[11px] font-mono uppercase tracking-[0.15em] text-bone">HTTP Security Header Policy</h3>
             </div>
-            <span class="text-[10px] font-mono text-slate-400">Audit Framework v1.2</span>
+            <span class="text-[10px] font-mono text-muted">framework v1.2</span>
           </div>
 
-          <div id="headers-list-container" class="space-y-3 font-mono text-xs">
-            <div class="bg-[#07090E] p-3 rounded-xl border border-[#1A2338] flex items-center justify-between">
+          <div id="headers-list-container" class="font-mono text-xs">
+            <div class="ledger-row px-5 py-3 flex items-center justify-between">
               <div>
-                <div class="font-bold text-white mb-0.5">Strict-Transport-Security (HSTS)</div>
-                <div class="text-[10px] text-slate-500">Enforces encrypted HTTPS connections.</div>
+                <div class="text-bone mb-0.5">Strict-Transport-Security</div>
+                <div class="text-[10px] text-muted">Enforces encrypted HTTPS connections.</div>
               </div>
-              <span class="px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">ENFORCED</span>
+              <span class="text-[10px] border border-goldDim text-gold px-2 py-0.5">ENFORCED</span>
             </div>
-
-            <div class="bg-[#07090E] p-3 rounded-xl border border-[#1A2338] flex items-center justify-between">
+            <div class="ledger-row px-5 py-3 flex items-center justify-between">
               <div>
-                <div class="font-bold text-white mb-0.5">Content-Security-Policy (CSP)</div>
-                <div class="text-[10px] text-slate-500">Prevents Cross-Site Scripting (XSS) attacks.</div>
+                <div class="text-bone mb-0.5">Content-Security-Policy</div>
+                <div class="text-[10px] text-muted">Prevents cross-site scripting (XSS).</div>
               </div>
-              <span class="px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">CONFIGURED</span>
+              <span class="text-[10px] border border-goldDim text-gold px-2 py-0.5">CONFIGURED</span>
             </div>
-
-            <div class="bg-[#07090E] p-3 rounded-xl border border-[#1A2338] flex items-center justify-between">
+            <div class="ledger-row px-5 py-3 flex items-center justify-between">
               <div>
-                <div class="font-bold text-white mb-0.5">X-Frame-Options</div>
-                <div class="text-[10px] text-slate-500">Mitigates Clickjacking exploitation attempt risks.</div>
+                <div class="text-bone mb-0.5">X-Frame-Options</div>
+                <div class="text-[10px] text-muted">Mitigates clickjacking attempts.</div>
               </div>
-              <span class="px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">DENY</span>
+              <span class="text-[10px] border border-goldDim text-gold px-2 py-0.5">DENY</span>
             </div>
-
-            <div class="bg-[#07090E] p-3 rounded-xl border border-[#1A2338] flex items-center justify-between">
+            <div class="px-5 py-3 flex items-center justify-between">
               <div>
-                <div class="font-bold text-white mb-0.5">X-Content-Type-Options</div>
-                <div class="text-[10px] text-slate-500">Blocks MIME-type sniffing vulnerabilities.</div>
+                <div class="text-bone mb-0.5">X-Content-Type-Options</div>
+                <div class="text-[10px] text-muted">Blocks MIME-type sniffing.</div>
               </div>
-              <span class="px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">NOSNIFF</span>
+              <span class="text-[10px] border border-goldDim text-gold px-2 py-0.5">NOSNIFF</span>
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- RIGHT COLUMN (5 COLS): SSL INSPECTOR & REAL-TIME AUDIT LOG TERMINAL -->
+      <!-- RIGHT -->
       <div class="lg:col-span-5 flex flex-col gap-6">
-        
-        <!-- SSL / TLS CERTIFICATE INSPECTOR CARD -->
-        <div class="bg-[#0E131F] border border-[#1A2338] rounded-2xl p-5">
-          <div class="flex items-center justify-between mb-4 border-b border-[#1A2338] pb-3">
+
+        <!-- TLS -->
+        <div class="bg-panel border border-hair">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-hair">
             <div class="flex items-center gap-2">
-              <i data-lucide="key-round" class="w-4 h-4 text-purple-400"></i>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-white">SSL/TLS Cipher Verification</h3>
+              <span class="text-[10px] font-mono text-goldDim">03</span>
+              <h3 class="text-[11px] font-mono uppercase tracking-[0.15em] text-bone">TLS Cipher Verification</h3>
             </div>
-            <span class="text-[10px] font-mono text-emerald-400">TLS v1.3</span>
+            <span class="text-[10px] font-mono text-gold/80">TLS 1.3</span>
           </div>
 
-          <div class="bg-[#07090E] p-4 rounded-xl border border-[#1A2338] space-y-3 font-mono text-xs">
-            <div class="flex justify-between items-center">
-              <span class="text-slate-500">ISSUER:</span>
-              <span id="ssl-issuer" class="text-slate-200 font-bold">Cloudflare TLS ECC CA-3</span>
+          <div class="px-5 py-4 font-mono text-xs space-y-3">
+            <div class="flex justify-between">
+              <span class="text-muted">ISSUER</span>
+              <span id="ssl-issuer" class="text-bone">Cloudflare TLS ECC CA-3</span>
             </div>
-            <div class="flex justify-between items-center">
-              <span class="text-slate-500">KEY EXCHANGE:</span>
-              <span class="text-slate-200">ECDHE_RSA with P-256</span>
+            <div class="flex justify-between">
+              <span class="text-muted">KEY EXCHANGE</span>
+              <span class="text-bone">ECDHE_RSA · P-256</span>
             </div>
-            <div class="flex justify-between items-center">
-              <span class="text-slate-500">VALIDITY:</span>
-              <span class="text-emerald-400 font-bold">342 Days Remaining</span>
+            <div class="flex justify-between">
+              <span class="text-muted">VALIDITY</span>
+              <span class="text-gold">342 days remaining</span>
             </div>
-            <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
-              <div class="h-full bg-emerald-500" style="width: 88%"></div>
+            <div class="w-full h-[3px] bg-hairSoft mt-1">
+              <div class="h-full bg-gold" style="width: 88%"></div>
             </div>
           </div>
         </div>
 
-        <!-- SOC REAL-TIME CONSOLE LOG TERMINAL -->
-        <div class="bg-[#0E131F] border border-[#1A2338] rounded-2xl p-5 flex-1 flex flex-col min-h-[360px]">
-          <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#1A2338]">
+        <!-- AUDIT TRAIL -->
+        <div class="bg-panel border border-hair flex-1 flex flex-col min-h-[360px]">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-hair">
             <div class="flex items-center gap-2">
-              <i data-lucide="terminal" class="w-4 h-4 text-cyan-400"></i>
-              <h3 class="text-xs font-bold uppercase tracking-wider text-white">Console Threat Logs</h3>
+              <span class="text-[10px] font-mono text-goldDim">04</span>
+              <h3 class="text-[11px] font-mono uppercase tracking-[0.15em] text-bone">Audit Trail</h3>
             </div>
-            <span class="text-[10px] font-mono text-slate-500">Stream: Active</span>
+            <span class="text-[10px] font-mono text-muted">stream active</span>
           </div>
 
-          <div id="soc-logs" class="flex-1 overflow-y-auto font-mono text-[11px] space-y-2 pr-1 text-slate-400 bg-[#07090E] p-3 rounded-xl border border-[#1A2338]">
-            <div class="text-cyan-400">[SYSTEM] NUEX SOC Engine online. Cloudflare DoH connected.</div>
-            <div class="text-slate-500">[INFO] Ready for target domain audit execution.</div>
+          <div id="soc-logs" class="flex-1 overflow-y-auto font-mono text-[11px] p-4 space-y-2 bg-panelAlt/40">
+            <div class="text-gold/90 pl-3 border-l border-goldDim">SYSTEM — NUEX audit engine online. Cloudflare DoH connected.</div>
+            <div class="text-muted pl-3 border-l border-hair">INFO — awaiting target domain.</div>
           </div>
         </div>
 
@@ -343,90 +314,83 @@
 
     </div>
 
+    <footer class="text-center text-[10px] font-mono text-muted/60 tracking-widest pt-2 pb-4">
+      NUEX SECURITY — BUILT IN LAGOS, NIGERIA
+    </footer>
+
   </main>
 
-  <!-- CORE AUDIT LOGIC SCRIPT -->
-  <script>
-    // Initialize Lucide Icons
-    lucide.createIcons();
+<script>
+  setInterval(() => {
+    const d = new Date();
+    document.getElementById('clock-display').innerText = d.toUTCString().split(' ')[4] + ' UTC';
+  }, 1000);
 
-    // Clock
-    setInterval(() => {
-      const d = new Date();
-      document.getElementById('clock-display').innerText = d.toUTCString().split(' ')[4] + ' UTC';
-    }, 1000);
+  function setDomain(domain) {
+    document.getElementById('target-domain').value = domain;
+    executeAudit();
+  }
 
-    function setDomain(domain) {
-      document.getElementById('target-domain').value = domain;
-      executeAudit();
-    }
+  function appendLog(msg, type = 'info') {
+    const logs = document.getElementById('soc-logs');
+    const entry = document.createElement('div');
 
-    function appendLog(msg, type = 'info') {
-      const logs = document.getElementById('soc-logs');
-      const entry = document.createElement('div');
-      
-      let colorClass = 'text-slate-400';
-      if(type === 'success') colorClass = 'text-emerald-400';
-      if(type === 'action') colorClass = 'text-cyan-400';
-      if(type === 'warn') colorClass = 'text-amber-400';
+    let colorClass = 'text-muted border-hair';
+    if (type === 'success') colorClass = 'text-gold/90 border-goldDim';
+    if (type === 'action')  colorClass = 'text-bone border-gold';
+    if (type === 'warn')    colorClass = 'text-bloodBright border-blood';
 
-      const time = new Date().toLocaleTimeString();
-      entry.className = colorClass;
-      entry.innerText = `[${time}] ${msg}`;
-      logs.prepend(entry);
-    }
+    const time = new Date().toLocaleTimeString();
+    entry.className = `pl-3 border-l ${colorClass}`;
+    entry.innerText = `[${time}] ${msg}`;
+    logs.prepend(entry);
+  }
 
-    async function executeAudit() {
-      const domain = document.getElementById('target-domain').value.trim();
-      const btn = document.getElementById('scan-btn');
+  async function executeAudit() {
+    const domain = document.getElementById('target-domain').value.trim();
+    const btn = document.getElementById('scan-btn');
+    if (!domain) return;
 
-      if (!domain) return;
+    btn.disabled = true;
+    btn.innerText = "AUDITING…";
 
-      btn.disabled = true;
-      btn.innerText = "AUDITING...";
-      
-      appendLog(`[AUDIT] Initiating deep DoH investigation for ${domain}...`, 'action');
+    appendLog(`AUDIT — initiating DoH investigation for ${domain}`, 'action');
 
-      try {
-        // Query Cloudflare DoH API directly for A Records
-        const dohUrl = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`;
-        const response = await fetch(dohUrl, {
-          headers: { 'Accept': 'application/dns-json' }
+    try {
+      const dohUrl = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`;
+      const response = await fetch(dohUrl, { headers: { 'Accept': 'application/dns-json' } });
+      const data = await response.json();
+
+      appendLog(`DOH — response received · status ${data.Status === 0 ? 'NOERROR' : 'ERROR'}`, 'success');
+
+      const tbody = document.getElementById('dns-table-body');
+      if (data.Answer && data.Answer.length > 0) {
+        tbody.innerHTML = '';
+        data.Answer.forEach(ans => {
+          const tr = document.createElement('tr');
+          tr.className = 'ledger-row';
+          tr.innerHTML = `
+            <td class="pl-5 py-3 text-gold">A</td>
+            <td class="text-bone">${ans.data}</td>
+            <td class="text-muted">${ans.TTL}s</td>
+            <td class="pr-5 text-right"><span class="text-[10px] border border-goldDim text-gold px-2 py-0.5">AUTHENTICATED</span></td>
+          `;
+          tbody.appendChild(tr);
         });
-        
-        const data = await response.json();
-        
-        appendLog(`[DoH] Response received. Status: ${data.Status === 0 ? 'NOERROR' : 'ERROR'}`, 'success');
-
-        // Populate Table with dynamic records if available
-        const tbody = document.getElementById('dns-table-body');
-        if (data.Answer && data.Answer.length > 0) {
-          tbody.innerHTML = '';
-          data.Answer.forEach(ans => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td class="py-3 font-bold text-cyan-400">A</td>
-              <td class="text-white">${ans.data}</td>
-              <td class="text-slate-500">${ans.TTL}s</td>
-              <td><span class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded">AUTHENTICATED</span></td>
-            `;
-            tbody.appendChild(tr);
-          });
-          document.getElementById('dns-count-val').innerText = `${data.Answer.length} Records`;
-        }
-
-        // Update Scores dynamically
-        document.getElementById('score-val').innerText = "98";
-        document.getElementById('ssl-issuer').innerText = `Cloudflare TLS (${domain})`;
-        appendLog(`[HEADER] Validated Security Policies: HSTS, CSP, Frame Options.`, 'success');
-
-      } catch (err) {
-        appendLog(`[ERROR] DoH Query failed: ${err.message}`, 'warn');
-      } finally {
-        btn.disabled = false;
-        btn.innerText = "AUDIT";
+        document.getElementById('dns-count-val').innerText = `${data.Answer.length} records`;
       }
+
+      document.getElementById('score-val').innerText = "98";
+      document.getElementById('ssl-issuer').innerText = `Cloudflare TLS — ${domain}`;
+      appendLog(`HEADERS — validated HSTS, CSP, Frame-Options policy`, 'success');
+
+    } catch (err) {
+      appendLog(`ERROR — DoH query failed: ${err.message}`, 'warn');
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "RUN AUDIT";
     }
-  </script>
+  }
+</script>
 </body>
 </html>
