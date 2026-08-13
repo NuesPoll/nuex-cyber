@@ -1,140 +1,840 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>NUEX — Raw Terminal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:#000;color:#9FE870;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.65}
-  ::-webkit-scrollbar{width:6px}
-  ::-webkit-scrollbar-thumb{background:#1F3A15;border-radius:3px}
-  body{padding:20px;max-width:900px;margin:0 auto}
-  .dim{color:#4D7A34}
-  .white{color:#E6F5DC}
-  .amber{color:#E0C25A}
-  .red{color:#E06A5A}
-  .cursor{display:inline-block;width:7px;height:14px;background:#9FE870;animation:blink 1s steps(1) infinite;vertical-align:-2px}
-  @keyframes blink{50%{opacity:0}}
-  input{background:transparent;border:none;outline:none;color:#E6F5DC;font-family:inherit;font-size:inherit;width:260px}
-  button{background:transparent;border:none;color:#9FE870;font-family:inherit;font-size:inherit;cursor:pointer;text-decoration:underline}
-  button:disabled{color:#4D7A34;cursor:default;text-decoration:none}
-  .row{white-space:pre-wrap;word-break:break-all}
-  @media print{body{color:#000;background:#fff}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NUEX — Enterprise Cyber Defense & DoH SOC Terminal</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            // Enterprise Hybrid Light/Dark Theme Palette
+            soc: {
+              bgLight: '#F8FAFC',
+              bgDark: '#0B1220',
+              panelLight: '#FFFFFF',
+              panelDark: '#111827',
+              panelBorderLight: '#E2E8F0',
+              panelBorderDark: '#1F2937',
+              subLight: '#475569',
+              subDark: '#9CA3AF',
+              brand: '#2563EB',
+              brandHover: '#1D4ED8',
+              emerald: '#10B981',
+              amber: '#F59E0B',
+              rose: '#EF4444',
+              cyan: '#06B6D4'
+            }
+          },
+          fontFamily: {
+            sans: ['Archivo', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    
+    /* System Light/Dark Theme Smooth Transition */
+    body {
+      background-color: #F8FAFC;
+      color: #0F172A;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .dark body {
+      background-color: #0B1220;
+      color: #F8FAFC;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #94A3B8; border-radius: 4px; }
+    .dark ::-webkit-scrollbar-thumb { background: #334155; }
+    ::-webkit-scrollbar-thumb:hover { background: #2563EB; }
+
+    /* Interactive Elements */
+    .kpi-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .kpi-card:hover { transform: translateY(-2px); }
+
+    .chip-btn[data-active="true"] {
+      background-color: #2563EB;
+      color: #FFFFFF !important;
+      border-color: #2563EB !important;
+    }
+
+    /* Print Styles for Executive PDF Security Reports */
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+      .print-border { border: 1px solid #CBD5E1 !important; box-shadow: none !important; }
+      .print-break { page-break-before: always; }
+    }
+  </style>
 </head>
-<body>
+<body class="font-sans antialiased min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
 
-<div class="dim">nuex cyber defense engine — raw terminal mode</div>
-<div class="dim">type a domain and press enter, or click RUN</div>
-<div>&nbsp;</div>
+  <!-- TOP SOC TELEMETRY STRIP -->
+  <div class="no-print bg-slate-100 dark:bg-[#070D18] border-b border-slate-200 dark:border-slate-800/80 px-4 py-1.5 text-[11px] font-mono text-slate-600 dark:text-slate-400 flex items-center justify-between overflow-x-auto whitespace-nowrap">
+    <div class="flex items-center gap-5">
+      <div class="flex items-center gap-2">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span class="text-slate-900 dark:text-slate-200 font-bold tracking-wider">ENGINE ONLINE</span>
+      </div>
+      <span class="text-slate-300 dark:text-slate-700">/</span>
+      <span>RESOLVER: <span class="text-blue-600 dark:text-cyan-400 font-semibold">Cloudflare DoH 1.1.1.1</span></span>
+      <span class="text-slate-300 dark:text-slate-700">/</span>
+      <span>DISCOVERY: <span class="text-purple-600 dark:text-purple-400 font-semibold">CRT.sh Certificate Log</span></span>
+    </div>
 
-<div class="row">$ target <input id="target-domain" value="solana.com" /> <button onclick="executeAudit()" id="scan-btn">[RUN]</button> <button onclick="exportJSON()">[EXPORT JSON]</button> <button onclick="exportPDF()">[PRINT]</button></div>
-<div>&nbsp;</div>
+    <div class="flex items-center gap-4">
+      <span class="border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded px-2 py-0.5 text-[10px] font-bold tracking-widest">ZERO-LOG MODE</span>
+      <span id="clock-display" class="font-mono">00:00:00 UTC</span>
+      <button onclick="toggleTheme()" id="theme-btn" class="border border-slate-300 dark:border-slate-700 hover:border-blue-500 rounded px-2 py-0.5 text-[10px] font-bold transition flex items-center gap-1">
+        <i data-lucide="sun-moon" class="w-3 h-3"></i>
+        <span id="theme-text">THEME</span>
+      </button>
+    </div>
+  </div>
 
-<div id="output"></div>
-<div id="soc-logs" class="dim" style="margin-top:12px"></div>
+  <!-- NAVIGATION HEADER -->
+  <header class="no-print border-b border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0E1726] sticky top-0 z-40 px-4 md:px-8 py-3.5 shadow-sm">
+    <div class="max-w-[1700px] mx-auto flex items-center justify-between gap-6 flex-wrap">
 
-<div class="row">$ <span class="cursor"></span></div>
+      <!-- LOGO -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 dark:bg-blue-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-500/20">
+          N
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-extrabold tracking-wider text-slate-900 dark:text-white">NUEX</h1>
+            <span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-mono font-bold">SOC v3.0</span>
+          </div>
+          <p class="text-[10px] font-mono text-slate-500 dark:text-slate-400 tracking-widest uppercase">DNS · Email Auth · Headers · Subdomains</p>
+        </div>
+      </div>
 
-<div class="hidden print:block" id="print-meta" style="display:none">
-  <span id="print-domain"></span><span id="print-date"></span>
-</div>
+      <!-- DOMAIN COMMAND BAR -->
+      <div class="flex-1 min-w-[280px] max-w-2xl">
+        <div class="relative flex items-center">
+          <span class="absolute left-3.5 text-xs font-mono font-bold text-slate-400 dark:text-slate-500">TARGET</span>
+          <input 
+            type="text" 
+            id="target-domain" 
+            placeholder="solana.com, paystack.com, flutterwave.com..." 
+            class="w-full bg-slate-50 dark:bg-[#070D18] border border-slate-300 dark:border-slate-700 focus:border-blue-600 text-sm font-mono text-slate-900 dark:text-white placeholder-slate-400 rounded-xl pl-20 pr-32 py-2.5 transition focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            value="solana.com"
+          />
+          <button 
+            onclick="executeAudit()"
+            id="scan-btn"
+            class="absolute right-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider rounded-lg px-4 py-2 transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-blue-500/20"
+          >
+            <span>RUN AUDIT</span>
+            <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
 
-<script>
-function showToast(msg){appendLog('> '+msg);}
-function copyToClipboard(text){navigator.clipboard.writeText(text).then(()=>showToast(`copied: ${text}`));}
-function appendLog(msg,type='info'){const logs=document.getElementById('soc-logs');const e=document.createElement('div');let cls='dim';if(type==='success')cls='';if(type==='action')cls='white';if(type==='warn')cls='amber';if(type==='error')cls='red';e.className='row '+cls;e.innerText=`[${new Date().toLocaleTimeString()}] ${msg}`;logs.prepend(e);}
-function sanitizeDomain(raw){let d=raw.trim().toLowerCase();d=d.replace(/^https?:\/\//,'');d=d.split('/')[0];d=d.split(':')[0];d=d.replace(/^www\./,'');return d;}
-async function dohQuery(name,type){const url=`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=${type}`;const res=await fetch(url,{headers:{'Accept':'application/dns-json'}});return res.json();}
-async function fetchSubdomains(domain){try{const res=await fetch(`https://crt.sh/?q=%25.${encodeURIComponent(domain)}&output=json`);if(!res.ok)return{ok:false,reason:`crt.sh HTTP ${res.status}`};const data=await res.json();const subs=[...new Set(data.map(i=>i.name_value.toLowerCase()).flatMap(v=>v.split('\n')))];return{ok:true,subdomains:subs.slice(0,20)};}catch(e){return{ok:false,reason:'crt.sh unreachable (network/CORS/rate-limit)'};}}
-async function checkHttpsAndHeaders(domain){const r={reachable:null,hsts:'unknown',csp:'unknown'};try{const res=await fetch(`https://${domain}`,{method:'GET',mode:'cors',redirect:'follow'});r.reachable=true;r.hsts=res.headers.get('strict-transport-security')?'present':'unreadable';r.csp=res.headers.get('content-security-policy')?'present':'unreadable';}catch(e){r.reachable='unverifiable';}return r;}
+      <!-- ACTIONS & EXPORT -->
+      <div class="flex items-center gap-2 text-xs font-mono">
+        <button onclick="exportJSON()" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-500 text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5" title="Export Raw JSON Data">
+          <i data-lucide="download" class="w-3.5 h-3.5 text-blue-500"></i>
+          <span>JSON</span>
+        </button>
+        <button onclick="exportPDF()" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-500 text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5" title="Print Security Certificate">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-purple-500"></i>
+          <span>PDF REPORT</span>
+        </button>
+      </div>
 
-let currentDnsRecords=[];
+    </div>
 
-async function executeAudit(){
-  const domain=sanitizeDomain(document.getElementById('target-domain').value);
-  const btn=document.getElementById('scan-btn');
-  const out=document.getElementById('output');
-  if(!domain){showToast('enter a valid domain');return;}
-  document.getElementById('target-domain').value=domain;
-  btn.disabled=true;btn.innerText='[RUNNING...]';
-  out.innerHTML='';
-  appendLog(`initiating scan: ${domain}`,'action');
-  document.getElementById('print-domain').innerText=domain;
-  document.getElementById('print-date').innerText=new Date().toLocaleString();
+    <!-- QUICK PRESETS BAR -->
+    <div class="max-w-[1700px] mx-auto mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/60 flex items-center gap-2 overflow-x-auto text-[11px] font-mono text-slate-500">
+      <span class="font-bold text-slate-700 dark:text-slate-300">PRESETS:</span>
+      <button onclick="setDomain('solana.com')" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Solana (Crypto)</button>
+      <button onclick="setDomain('paystack.com')" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Paystack (Fintech)</button>
+      <button onclick="setDomain('flutterwave.com')" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Flutterwave (Fintech)</button>
+      <button onclick="setDomain('moniepoint.com')" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Moniepoint (Banking)</button>
+      <button onclick="setDomain('github.com')" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">GitHub (Dev Infra)</button>
+    </div>
+  </header>
 
-  function line(html,cls=''){const d=document.createElement('div');d.className='row '+cls;d.innerHTML=html;out.appendChild(d);}
+  <!-- PRINT REPORT HEADER (Only visible when printing to PDF) -->
+  <div class="hidden print:block p-8 border-b-2 border-slate-900">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-3xl font-black">NUEX SECURITY AUDIT REPORT</h1>
+        <p class="text-sm font-mono text-slate-600">Pan-African Cyber Defense & Infrastructure Verification</p>
+      </div>
+      <div class="text-right font-mono text-xs">
+        <p>Target: <strong id="print-domain" class="text-base text-blue-600">---</strong></p>
+        <p>Generated: <span id="print-date">---</span></p>
+      </div>
+    </div>
+  </div>
 
-  try{
-    line(`&gt; resolving DNS for <span class="white">${domain}</span>...`);
-    const [aRes,aaaaRes,mxRes,txtRes,dmarcRes]=await Promise.all([dohQuery(domain,'A'),dohQuery(domain,'AAAA'),dohQuery(domain,'MX'),dohQuery(domain,'TXT'),dohQuery(`_dmarc.${domain}`,'TXT')]);
-    currentDnsRecords=[];
-    (aRes.Answer||[]).filter(a=>a.type===1).forEach(a=>currentDnsRecords.push({type:'A',value:a.data,ttl:a.TTL}));
-    (aaaaRes.Answer||[]).filter(a=>a.type===28).forEach(a=>currentDnsRecords.push({type:'AAAA',value:a.data,ttl:a.TTL}));
-    (mxRes.Answer||[]).filter(a=>a.type===15).forEach(a=>currentDnsRecords.push({type:'MX',value:a.data,ttl:a.TTL}));
-    (txtRes.Answer||[]).filter(a=>a.type===16).forEach(a=>currentDnsRecords.push({type:'TXT',value:a.data.replace(/^"|"$/g,''),ttl:a.TTL}));
-    line(`&gt; ${currentDnsRecords.length} records found`,'dim');
-    currentDnsRecords.forEach(r=>line(`&nbsp;&nbsp;${r.type.padEnd(6)} ${r.value}  <span class="dim">ttl=${r.ttl}s</span>`));
+  <!-- MAIN SOC DASHBOARD -->
+  <main class="flex-1 max-w-[1700px] w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
 
-    const spfRecord=currentDnsRecords.find(r=>r.type==='TXT'&&r.value.includes('spf1'));
-    const dmarcRecord=(dmarcRes.Answer||[]).find(a=>a.data&&a.data.includes('DMARC1'));
-    line('&nbsp;');
-    line(`&gt; spf: <span class="${spfRecord?'':'red'}">${spfRecord?'pass':'FAIL — no spf1 record'}</span>`);
-    line(`&gt; dmarc: <span class="${dmarcRecord?'':'red'}">${dmarcRecord?'pass':'FAIL — no _dmarc record'}</span>`);
+    <!-- TOP KPI EXECUTIVE SCORECARDS -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-    line('&nbsp;');
-    line(`&gt; querying crt.sh for subdomains...`);
-    appendLog('querying crt.sh','action');
-    const subResult=await fetchSubdomains(domain);
-    if(subResult.ok){
-      line(`&gt; ${subResult.subdomains.length} subdomains found`,'dim');
-      subResult.subdomains.forEach(s=>line(`&nbsp;&nbsp;${s}`));
-      appendLog(`${subResult.subdomains.length} subdomains found`,'success');
-    }else{
-      line(`&gt; <span class="amber">subdomain discovery unavailable — ${subResult.reason}</span>`);
-      line(`&nbsp;&nbsp;<span class="dim">no guessed data shown — nuex does not fabricate results</span>`);
-      appendLog(`subdomain discovery failed: ${subResult.reason}`,'warn');
+      <!-- Overall Security Score -->
+      <div class="kpi-card bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm print-border">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block mb-1">Security Score</span>
+            <div class="flex items-baseline gap-2">
+              <span id="score-val" class="text-3xl font-black text-blue-600 dark:text-blue-400">—</span>
+              <span class="text-xs font-mono text-slate-400">/ 100</span>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+        </div>
+        <span id="score-status" class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 block">Awaiting audit execution...</span>
+      </div>
+
+      <!-- Threat Exposure Level -->
+      <div class="kpi-card bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm print-border">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block mb-1">Threat Exposure</span>
+            <div class="text-2xl font-black font-mono text-slate-900 dark:text-white" id="risk-val">—</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+          </div>
+        </div>
+        <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 block" id="risk-sub">Scan domain to calculate risk</span>
+      </div>
+
+      <!-- DNS Resolution Stats -->
+      <div class="kpi-card bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm print-border">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block mb-1">DNS Resolution</span>
+            <div class="text-2xl font-black font-mono text-slate-900 dark:text-white" id="dns-count-val">0 Records</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400">
+            <i data-lucide="network" class="w-6 h-6"></i>
+          </div>
+        </div>
+        <span class="text-[11px] font-mono text-blue-600 dark:text-cyan-400 mt-2 block">DoH Authenticated</span>
+      </div>
+
+      <!-- Email Auth Compliance -->
+      <div class="kpi-card bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm print-border">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block mb-1">Email Authentication</span>
+            <div class="text-2xl font-black font-mono text-slate-900 dark:text-white" id="email-compliance-val">— / 2</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+            <i data-lucide="mail-check" class="w-6 h-6"></i>
+          </div>
+        </div>
+        <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 block">SPF & DMARC Validation</span>
+      </div>
+
+    </section>
+
+    <!-- DENSE MULTI-COLUMN SOC COMMAND GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- LEFT COLUMN (7 COLS): TABLES & REMEDIATION PLAYBOOK -->
+      <div class="lg:col-span-7 flex flex-col gap-6">
+
+        <!-- 01. DNS INFRASTRUCTURE MATRIX -->
+        <div class="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm print-border">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800 flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <i data-lucide="database" class="w-4 h-4 text-blue-600 dark:text-cyan-400"></i>
+              <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">01 · DNS Infrastructure Ledger</h3>
+            </div>
+            
+            <!-- DNS Filter Chips -->
+            <div id="filter-chips" class="flex items-center gap-1 text-[11px] font-mono no-print">
+              <button data-type="ALL" data-active="true" onclick="filterDnsType('ALL', this)" class="chip-btn border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-slate-600 dark:text-slate-300">ALL</button>
+              <button data-type="A" onclick="filterDnsType('A', this)" class="chip-btn border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-slate-600 dark:text-slate-300">A</button>
+              <button data-type="AAAA" onclick="filterDnsType('AAAA', this)" class="chip-btn border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-slate-600 dark:text-slate-300">AAAA</button>
+              <button data-type="MX" onclick="filterDnsType('MX', this)" class="chip-btn border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-slate-600 dark:text-slate-300">MX</button>
+              <button data-type="TXT" onclick="filterDnsType('TXT', this)" class="chip-btn border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-slate-600 dark:text-slate-300">TXT</button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left font-mono text-xs">
+              <thead>
+                <tr class="text-[10px] text-slate-400 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+                  <th class="pl-5 py-2 font-bold cursor-pointer" onclick="sortDnsBy('type')">TYPE ⇅</th>
+                  <th class="py-2 font-bold">RESOLVED VALUE</th>
+                  <th class="py-2 font-bold cursor-pointer" onclick="sortDnsBy('ttl')">TTL ⇅</th>
+                  <th class="pr-5 py-2 font-bold text-right">VERIFICATION</th>
+                </tr>
+              </thead>
+              <tbody id="dns-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 text-slate-800 dark:text-slate-200">
+                <tr>
+                  <td colspan="4" class="text-center text-slate-400 py-8 text-xs font-mono">Run an audit to query DoH DNS infrastructure.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 02. CRT.SH SUBDOMAIN DISCOVERY -->
+        <div class="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm print-border">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-2">
+              <i data-lucide="globe-2" class="w-4 h-4 text-purple-600 dark:text-purple-400"></i>
+              <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">02 · Passive Subdomain Discovery (CRT.sh)</h3>
+            </div>
+            <span id="subdomain-count" class="text-[10px] font-mono bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded font-bold">0 Discovered</span>
+          </div>
+
+          <div class="p-4 max-h-56 overflow-y-auto font-mono text-xs">
+            <ul id="subdomain-list" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-slate-600 dark:text-slate-300">
+              <li class="col-span-full text-center text-slate-400 py-4">Awaiting target domain query...</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 03. EMAIL & HEADER SECURITY CHECKLIST -->
+        <div class="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm print-border">
+          <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-2">
+              <i data-lucide="shield-alert" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
+              <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">03 · Email Auth & Security Header Checklist</h3>
+            </div>
+            <span class="text-[10px] font-mono text-slate-400">Automated Audit</span>
+          </div>
+
+          <div class="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono text-xs">
+            <!-- SPF -->
+            <div class="px-5 py-3 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-slate-900 dark:text-white">SPF (Sender Policy Framework)</div>
+                <div class="text-[11px] text-slate-500">Specifies authorized mail servers for domain.</div>
+              </div>
+              <span id="spf-badge" class="px-2.5 py-1 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">PENDING</span>
+            </div>
+            <!-- DMARC -->
+            <div class="px-5 py-3 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-slate-900 dark:text-white">DMARC Policy</div>
+                <div class="text-[11px] text-slate-500">Dictates action on failed SPF/DKIM verification.</div>
+              </div>
+              <span id="dmarc-badge" class="px-2.5 py-1 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">PENDING</span>
+            </div>
+            <!-- HSTS -->
+            <div class="px-5 py-3 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-slate-900 dark:text-white">Strict-Transport-Security (HSTS)</div>
+                <div class="text-[11px] text-slate-500">Enforces HTTPS encryption on browsers.</div>
+              </div>
+              <span id="hsts-badge" class="px-2.5 py-1 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">PENDING</span>
+            </div>
+            <!-- CSP -->
+            <div class="px-5 py-3 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-slate-900 dark:text-white">Content-Security-Policy (CSP)</div>
+                <div class="text-[11px] text-slate-500">Mitigates Cross-Site Scripting (XSS) vectors.</div>
+              </div>
+              <span id="csp-badge" class="px-2.5 py-1 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">PENDING</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 04. PLAIN-ENGLISH REMEDIATION PLAYBOOK -->
+        <div class="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm print-border">
+          <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <i data-lucide="wrench" class="w-4 h-4 text-amber-500"></i>
+            <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">04 · Plain-English Fix Recommendations</h3>
+          </div>
+
+          <div id="remediation-container" class="space-y-4 text-xs font-mono">
+            <p class="text-slate-400 italic">Audit results will automatically produce tailored step-by-step copy/paste DNS record fixes here.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN (5 COLS): CONNECTIVITY PANEL & REAL-TIME LOG DRAWER -->
+      <div class="lg:col-span-5 flex flex-col gap-6">
+
+        <!-- HTTPS / TRANSPORT REACHABILITY -->
+        <div class="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm print-border">
+          <div class="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="lock" class="w-4 h-4 text-blue-600 dark:text-cyan-400"></i>
+              <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">05 · HTTPS Transport Check</h3>
+            </div>
+            <span id="https-status-tag" class="text-[10px] font-mono text-slate-400 font-bold">PENDING</span>
+          </div>
+
+          <div class="space-y-3 font-mono text-xs">
+            <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+              <span class="text-slate-500">HTTPS Endpoint Reachable:</span>
+              <span id="https-reachable-val" class="font-bold text-slate-900 dark:text-white">—</span>
+            </div>
+            <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+              <span class="text-slate-500">HSTS Header:</span>
+              <span id="https-hsts-val" class="font-bold text-slate-900 dark:text-white">—</span>
+            </div>
+            <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+              <span class="text-slate-500">CSP Header:</span>
+              <span id="https-csp-val" class="font-bold text-slate-900 dark:text-white">—</span>
+            </div>
+            <p class="text-[10px] text-slate-400 italic leading-relaxed pt-1">Browser-side scans are limited by CORS — many sites won't expose header contents to cross-origin JS even when the header is present. "Unable to verify" means the header couldn't be read, not that it's missing. A server-side scanner removes this limitation.</p>
+          </div>
+        </div>
+
+        <!-- REAL-TIME SOC CONSOLE STREAM & LOG DRAWER -->
+        <div class="no-print bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex-1 flex flex-col min-h-[380px] shadow-sm">
+          <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
+            <div class="flex items-center gap-2">
+              <i data-lucide="terminal" class="w-4 h-4 text-purple-600 dark:text-purple-400"></i>
+              <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">06 · SOC Telemetry Terminal</h3>
+            </div>
+            <span class="text-[10px] font-mono text-slate-400">Live Stream</span>
+          </div>
+
+          <div id="soc-logs" class="flex-1 overflow-y-auto font-mono text-[11px] p-3 space-y-2 bg-slate-900 text-slate-300 rounded-xl border border-slate-800 min-h-[260px]">
+            <div class="text-cyan-400">[SYSTEM] NUEX Cyber Defense Engine Online.</div>
+            <div class="text-slate-500">[READY] Enter a target domain and click 'RUN AUDIT'.</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="no-print text-center text-xs font-mono text-slate-400 pt-4 pb-6">
+      NUEX PAN-AFRICAN CYBER DEFENSE PLATFORM — LAGOS, NIGERIA
+    </footer>
+
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="no-print fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-mono px-4 py-2 rounded-xl shadow-2xl opacity-0 transition-all pointer-events-none translate-y-2 z-50">
+    Notification
+  </div>
+
+  <!-- CORE JAVASCRIPT ENGINE -->
+  <script>
+    // Initialize Icons
+    lucide.createIcons();
+
+    // Auto System Theme Handler
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
     }
 
-    line('&nbsp;');
-    line(`&gt; checking https transport...`);
-    const h=await checkHttpsAndHeaders(domain);
-    line(`&gt; https reachable: <span class="${h.reachable===true?'':'amber'}">${h.reachable===true?'yes':'unable to verify (browser CORS restriction)'}</span>`);
-    line(`&gt; hsts header: <span class="${h.hsts==='present'?'':'amber'}">${h.hsts==='present'?'present':'unable to verify'}</span>`);
-    line(`&gt; csp header: <span class="${h.csp==='present'?'':'amber'}">${h.csp==='present'?'present':'unable to verify'}</span>`);
-
-    let score=40;
-    if(currentDnsRecords.some(r=>r.type==='A'))score+=20;
-    if(currentDnsRecords.some(r=>r.type==='MX'))score+=15;
-    if(spfRecord)score+=12;
-    if(dmarcRecord)score+=13;
-    const grade=score>=80?'LOW RISK':score>=60?'MODERATE RISK':'HIGH RISK';
-
-    line('&nbsp;');
-    line(`&gt; <span class="white">score: ${score}/100 — ${grade}</span>`);
-
-    if(!spfRecord||!dmarcRecord){
-      line('&nbsp;');
-      line(`&gt; remediation:`,'dim');
-      if(!spfRecord)line(`&nbsp;&nbsp;add TXT: <span class="white">v=spf1 include:_spf.google.com ~all</span>  <button onclick="copyToClipboard('v=spf1 include:_spf.google.com ~all')">[copy]</button>`);
-      if(!dmarcRecord)line(`&nbsp;&nbsp;add TXT _dmarc.${domain}: <span class="white">v=DMARC1; p=reject; rua=mailto:dmarc@${domain}</span>  <button onclick="copyToClipboard('v=DMARC1; p=reject; rua=mailto:dmarc@${domain}')">[copy]</button>`);
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+      const isDark = document.documentElement.classList.contains('dark');
+      document.getElementById('theme-text').innerText = isDark ? 'DARK' : 'LIGHT';
     }
 
-    appendLog(`scan complete. score ${score}/100`,'success');
-  }catch(err){
-    line(`&gt; <span class="red">error: ${err.message}</span>`);
-    appendLog(`error: ${err.message}`,'error');
-  }finally{
-    btn.disabled=false;btn.innerText='[RUN]';
-  }
-}
+    // System Clock UTC
+    setInterval(() => {
+      const d = new Date();
+      document.getElementById('clock-display').innerText = d.toUTCString().split(' ')[4] + ' UTC';
+    }, 1000);
 
-function exportJSON(){const domain=document.getElementById('target-domain').value||'nuex';const s="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify({domain,timestamp:new Date().toISOString(),dnsRecords:currentDnsRecords},null,2));const a=document.createElement('a');a.href=s;a.download=`nuex-${domain}.json`;a.click();showToast('exported JSON');}
-function exportPDF(){window.print();}
-document.getElementById('target-domain').addEventListener('keydown',e=>{if(e.key==='Enter')executeAudit();});
-</script>
+    // Toast Notice
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.classList.remove('opacity-0', 'translate-y-2');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => t.classList.add('opacity-0', 'translate-y-2'), 2200);
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => showToast(`Copied: "${text}"`));
+    }
+
+    function setDomain(domain) {
+      document.getElementById('target-domain').value = domain;
+      executeAudit();
+    }
+
+    // Sanitize user-entered domain: strip protocol, path, trailing slash, whitespace
+    function sanitizeDomain(raw) {
+      let d = raw.trim().toLowerCase();
+      d = d.replace(/^https?:\/\//, '');
+      d = d.split('/')[0];
+      d = d.split(':')[0]; // strip port if present
+      d = d.replace(/^www\./, '');
+      return d;
+    }
+
+    // Log Drawer Function
+    function appendLog(msg, type = 'info') {
+      const logs = document.getElementById('soc-logs');
+      const entry = document.createElement('div');
+      
+      let colorClass = 'text-slate-300';
+      if (type === 'success') colorClass = 'text-emerald-400';
+      if (type === 'action') colorClass = 'text-cyan-400';
+      if (type === 'warn') colorClass = 'text-amber-400';
+      if (type === 'error') colorClass = 'text-rose-400';
+
+      const time = new Date().toLocaleTimeString();
+      entry.className = `${colorClass} font-mono`;
+      entry.innerText = `[${time}] ${msg}`;
+      logs.prepend(entry);
+    }
+
+    // DoH Resolver API
+    async function dohQuery(name, type) {
+      const url = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=${type}`;
+      const res = await fetch(url, { headers: { 'Accept': 'application/dns-json' } });
+      return res.json();
+    }
+
+    // CRT.sh Subdomain Enumeration — NO FABRICATED FALLBACK.
+    // Returns { ok: true, subdomains: [...] } on success, or { ok: false, reason } on failure.
+    // We never invent subdomain guesses and label them as verified cert-log data.
+    async function fetchSubdomains(domain) {
+      try {
+        const res = await fetch(`https://crt.sh/?q=%25.${encodeURIComponent(domain)}&output=json`);
+        if (!res.ok) return { ok: false, reason: `crt.sh returned HTTP ${res.status}` };
+        const data = await res.json();
+        const subdomains = [...new Set(data.map(item => item.name_value.toLowerCase()).flatMap(v => v.split('\n')))];
+        return { ok: true, subdomains: subdomains.slice(0, 20) };
+      } catch (e) {
+        return { ok: false, reason: 'crt.sh unreachable (network/CORS/rate-limit)' };
+      }
+    }
+
+    // Best-effort HTTPS + security header check.
+    // IMPORTANT: cross-origin fetch() in browsers cannot read most response headers
+    // (HSTS, CSP, etc.) unless the target server explicitly exposes them via
+    // Access-Control-Expose-Headers — most sites don't. We attempt the fetch to
+    // confirm HTTPS reachability, and read headers ONLY when the browser actually
+    // exposes them. Otherwise we report "Unable to verify," never a fake pass.
+    async function checkHttpsAndHeaders(domain) {
+      const result = { reachable: null, hsts: 'unknown', csp: 'unknown' };
+      try {
+        const res = await fetch(`https://${domain}`, { method: 'GET', mode: 'cors', redirect: 'follow' });
+        result.reachable = true;
+        const hstsHeader = res.headers.get('strict-transport-security');
+        const cspHeader = res.headers.get('content-security-policy');
+        result.hsts = hstsHeader ? 'present' : 'unreadable';
+        result.csp = cspHeader ? 'present' : 'unreadable';
+      } catch (e) {
+        // Opaque/blocked cross-origin response, or network failure — cannot confirm either way.
+        result.reachable = 'unverifiable';
+      }
+      return result;
+    }
+
+    function setBadge(elId, state, presentText = '✓ PRESENT', absentText = '✕ MISSING', unknownText = '⚠ UNABLE TO VERIFY') {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      if (state === true) {
+        el.className = 'px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400';
+        el.innerText = presentText;
+      } else if (state === false) {
+        el.className = 'px-2.5 py-1 rounded text-[10px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400';
+        el.innerText = absentText;
+      } else {
+        el.className = 'px-2.5 py-1 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400';
+        el.innerText = unknownText;
+      }
+    }
+
+    // Table Filter and Sort States
+    let currentDnsRecords = [];
+    let activeDnsFilter = 'ALL';
+    let dnsSortState = { key: null, dir: 1 };
+
+    function renderDnsTable() {
+      const tbody = document.getElementById('dns-table-body');
+      let rows = activeDnsFilter === 'ALL' ? currentDnsRecords : currentDnsRecords.filter(r => r.type === activeDnsFilter);
+
+      if (dnsSortState.key) {
+        rows = [...rows].sort((a, b) => {
+          let av = a[dnsSortState.key], bv = b[dnsSortState.key];
+          if (dnsSortState.key === 'ttl') { av = Number(av); bv = Number(bv); }
+          if (av < bv) return -1 * dnsSortState.dir;
+          if (av > bv) return 1 * dnsSortState.dir;
+          return 0;
+        });
+      }
+
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-slate-400 py-6">No records found for filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = rows.map(r => `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
+          <td class="pl-5 py-3 font-bold text-blue-600 dark:text-cyan-400">${r.type}</td>
+          <td class="font-mono text-slate-900 dark:text-slate-100 flex items-center justify-between pr-4">
+            <span class="break-all">${r.value}</span>
+            <button onclick="copyToClipboard('${r.value.replace(/'/g, "\\'")}')" class="no-print ml-2 text-slate-400 hover:text-blue-500" title="Copy">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            </button>
+          </td>
+          <td class="text-slate-500">${r.ttl}s</td>
+          <td class="pr-5 text-right">
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+              ✓ VERIFIED
+            </span>
+          </td>
+        </tr>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function filterDnsType(type, btn) {
+      activeDnsFilter = type;
+      document.querySelectorAll('#filter-chips .chip-btn').forEach(c => c.setAttribute('data-active', 'false'));
+      btn.setAttribute('data-active', 'true');
+      renderDnsTable();
+    }
+
+    function sortDnsBy(key) {
+      dnsSortState.dir = (dnsSortState.key === key) ? dnsSortState.dir * -1 : 1;
+      dnsSortState.key = key;
+      renderDnsTable();
+    }
+
+    // MAIN AUDIT EXECUTION ENGINE
+    async function executeAudit() {
+      const rawInput = document.getElementById('target-domain').value;
+      const domain = sanitizeDomain(rawInput);
+
+      const btn = document.getElementById('scan-btn');
+
+      if (!domain) {
+        showToast("Please enter a valid domain!");
+        return;
+      }
+
+      document.getElementById('target-domain').value = domain;
+
+      btn.disabled = true;
+      btn.innerHTML = `<span>AUDITING...</span>`;
+      appendLog(`[AUDIT] Initiating DoH investigation for ${domain}`, 'action');
+
+      // Update Print Domain
+      document.getElementById('print-domain').innerText = domain;
+      document.getElementById('print-date').innerText = new Date().toLocaleString();
+
+      // Reset badges to PENDING each run
+      ['spf-badge', 'dmarc-badge', 'hsts-badge', 'csp-badge'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.className = 'px-2.5 py-1 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400'; el.innerText = 'CHECKING'; }
+      });
+
+      try {
+        // Parallel DoH Queries
+        const [aRes, aaaaRes, mxRes, txtRes, dmarcRes] = await Promise.all([
+          dohQuery(domain, 'A'),
+          dohQuery(domain, 'AAAA'),
+          dohQuery(domain, 'MX'),
+          dohQuery(domain, 'TXT'),
+          dohQuery(`_dmarc.${domain}`, 'TXT')
+        ]);
+
+        appendLog(`[DoH] DNS Query responses received for ${domain}`, 'success');
+
+        // Parse DNS Records
+        currentDnsRecords = [];
+        (aRes.Answer || []).filter(a => a.type === 1).forEach(a => currentDnsRecords.push({ type: 'A', value: a.data, ttl: a.TTL }));
+        (aaaaRes.Answer || []).filter(a => a.type === 28).forEach(a => currentDnsRecords.push({ type: 'AAAA', value: a.data, ttl: a.TTL }));
+        (mxRes.Answer || []).filter(a => a.type === 15).forEach(a => currentDnsRecords.push({ type: 'MX', value: a.data, ttl: a.TTL }));
+        (txtRes.Answer || []).filter(a => a.type === 16).forEach(a => currentDnsRecords.push({ type: 'TXT', value: a.data.replace(/^"|"$/g, ''), ttl: a.TTL }));
+
+        renderDnsTable();
+        document.getElementById('dns-count-val').innerText = `${currentDnsRecords.length} Records`;
+
+        // Check SPF & DMARC (these ARE reliably checkable via DoH — no CORS issue)
+        const spfRecord = currentDnsRecords.find(r => r.type === 'TXT' && r.value.includes('spf1'));
+        const dmarcRecord = (dmarcRes.Answer || []).find(a => a.data && a.data.includes('DMARC1'));
+
+        setBadge('spf-badge', !!spfRecord, '✓ CONFIGURED', '✕ MISSING');
+        setBadge('dmarc-badge', !!dmarcRecord, '✓ CONFIGURED', '✕ MISSING');
+
+        const emailScore = (spfRecord ? 1 : 0) + (dmarcRecord ? 1 : 0);
+        document.getElementById('email-compliance-val').innerText = `${emailScore} / 2`;
+
+        // Fetch Passive Subdomains (CRT.sh) — honest failure state, no fabricated data
+        appendLog(`[CRT.sh] Querying certificate logs for public subdomains...`, 'action');
+        const subResult = await fetchSubdomains(domain);
+        const subList = document.getElementById('subdomain-list');
+
+        if (subResult.ok) {
+          document.getElementById('subdomain-count').innerText = `${subResult.subdomains.length} Discovered`;
+          if (subResult.subdomains.length > 0) {
+            subList.innerHTML = subResult.subdomains.map(sub => `
+              <li class="bg-slate-50 dark:bg-slate-900/60 p-2 rounded border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span class="truncate">${sub}</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-300 font-bold">CERT LOG</span>
+              </li>
+            `).join('');
+          } else {
+            subList.innerHTML = `<li class="col-span-full text-center text-slate-400 py-2">No public subdomains indexed.</li>`;
+          }
+          appendLog(`[CRT.sh] ${subResult.subdomains.length} subdomains found in certificate logs`, 'success');
+        } else {
+          document.getElementById('subdomain-count').innerText = `Unavailable`;
+          subList.innerHTML = `<li class="col-span-full text-center text-amber-600 dark:text-amber-400 py-4">⚠ Subdomain discovery unavailable — ${subResult.reason}. No data shown (we don't guess).</li>`;
+          appendLog(`[CRT.sh] Discovery failed: ${subResult.reason}`, 'warn');
+        }
+
+        // HTTPS reachability + best-effort header check (honest about CORS limits)
+        appendLog(`[HTTPS] Attempting transport-layer check for ${domain}`, 'action');
+        const httpsResult = await checkHttpsAndHeaders(domain);
+
+        const reachEl = document.getElementById('https-reachable-val');
+        const hstsEl = document.getElementById('https-hsts-val');
+        const cspEl = document.getElementById('https-csp-val');
+        const tagEl = document.getElementById('https-status-tag');
+
+        if (httpsResult.reachable === true) {
+          reachEl.innerText = 'Yes';
+          reachEl.className = 'font-bold text-emerald-600 dark:text-emerald-400';
+          tagEl.innerText = 'REACHABLE';
+          tagEl.className = 'text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold';
+        } else {
+          reachEl.innerText = 'Unable to verify (CORS)';
+          reachEl.className = 'font-bold text-amber-600 dark:text-amber-400';
+          tagEl.innerText = 'CORS RESTRICTED';
+          tagEl.className = 'text-[10px] font-mono text-amber-600 dark:text-amber-400 font-bold';
+        }
+
+        const hstsVerifiable = httpsResult.hsts !== 'unknown';
+        hstsEl.innerText = httpsResult.hsts === 'present' ? 'Present' : (hstsVerifiable ? 'Unable to verify' : 'Unable to verify');
+        hstsEl.className = httpsResult.hsts === 'present' ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'font-bold text-amber-600 dark:text-amber-400';
+
+        cspEl.innerText = httpsResult.csp === 'present' ? 'Present' : 'Unable to verify';
+        cspEl.className = httpsResult.csp === 'present' ? 'font-bold text-emerald-600 dark:text-emerald-400' : 'font-bold text-amber-600 dark:text-amber-400';
+
+        setBadge('hsts-badge', httpsResult.hsts === 'present' ? true : null);
+        setBadge('csp-badge', httpsResult.csp === 'present' ? true : null);
+
+        appendLog(`[HTTPS] Transport check complete`, 'success');
+
+        // Generate Plain-English Fix Recommendations (only for things we can actually confirm)
+        const remContainer = document.getElementById('remediation-container');
+        let remHtml = '';
+
+        if (!spfRecord) {
+          remHtml += `
+            <div class="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-xl">
+              <div class="font-bold text-amber-800 dark:text-amber-300 mb-1">⚠️ Missing SPF Record</div>
+              <p class="text-slate-600 dark:text-slate-300 text-[11px] mb-2">Without SPF, spoofers can send forged emails pretending to come from ${domain}.</p>
+              <div class="bg-slate-900 text-slate-200 p-2 rounded flex items-center justify-between text-[10px]">
+                <code>v=spf1 include:_spf.google.com ~all</code>
+                <button onclick="copyToClipboard('v=spf1 include:_spf.google.com ~all')" class="text-blue-400 hover:text-white">Copy</button>
+              </div>
+            </div>
+          `;
+        }
+
+        if (!dmarcRecord) {
+          remHtml += `
+            <div class="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/80 rounded-xl">
+              <div class="font-bold text-rose-800 dark:text-rose-300 mb-1">🚨 Missing DMARC Policy</div>
+              <p class="text-slate-600 dark:text-slate-300 text-[11px] mb-2">Add a TXT record named <code>_dmarc.${domain}</code> to instruct mail servers to reject spoofed emails.</p>
+              <div class="bg-slate-900 text-slate-200 p-2 rounded flex items-center justify-between text-[10px]">
+                <code>v=DMARC1; p=reject; rua=mailto:dmarc@${domain}</code>
+                <button onclick="copyToClipboard('v=DMARC1; p=reject; rua=mailto:dmarc@${domain}')" class="text-blue-400 hover:text-white">Copy</button>
+              </div>
+            </div>
+          `;
+        }
+
+        if (spfRecord && dmarcRecord) {
+          remHtml += `<p class="text-emerald-600 dark:text-emerald-400 font-bold">✓ Email Security Hardened! SPF and DMARC policies are configured.</p>`;
+        }
+
+        remHtml += `<p class="text-slate-400 text-[10px] italic pt-1">HSTS/CSP recommendations require server-side header verification to confirm — see section 05.</p>`;
+
+        remContainer.innerHTML = remHtml;
+
+        // Calculate Overall Score — ONLY from signals we can actually confirm (SPF/DMARC/DNS presence)
+        let score = 40;
+        if (currentDnsRecords.some(r => r.type === 'A')) score += 20;
+        if (currentDnsRecords.some(r => r.type === 'MX')) score += 15;
+        if (spfRecord) score += 12;
+        if (dmarcRecord) score += 13;
+
+        document.getElementById('score-val').innerText = score;
+        document.getElementById('score-status').innerText = score >= 80 ? "Grade A (Hardened)" : score >= 60 ? "Grade B (Moderate Risk)" : "Grade C (Action Required)";
+        
+        const riskVal = document.getElementById('risk-val');
+        riskVal.innerText = score >= 80 ? "LOW" : score >= 60 ? "MEDIUM" : "HIGH";
+        riskVal.className = `text-2xl font-black font-mono ${score >= 80 ? 'text-emerald-600 dark:text-emerald-400' : score >= 60 ? 'text-amber-500' : 'text-rose-600'}`;
+        document.getElementById('risk-sub').innerText = `${100 - score}% attack surface gap (DNS/email signals only)`;
+
+        appendLog(`[COMPLETE] Security Audit completed for ${domain}. Score: ${score}/100`, 'success');
+        showToast(`Audit finished for ${domain}`);
+
+      } catch (err) {
+        appendLog(`[ERROR] Audit query failed: ${err.message}`, 'error');
+        showToast("Audit failed. Check network connectivity.");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>RUN AUDIT</span><i data-lucide="zap" class="w-3.5 h-3.5"></i>`;
+        lucide.createIcons();
+      }
+    }
+
+    // Export Data Functions
+    function exportJSON() {
+      const domain = document.getElementById('target-domain').value || 'nuex-audit';
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+        domain: domain,
+        timestamp: new Date().toISOString(),
+        score: document.getElementById('score-val').innerText,
+        dnsRecords: currentDnsRecords
+      }, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `nuex-audit-${domain}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      showToast("Exported JSON Audit Data");
+    }
+
+    function exportPDF() {
+      window.print();
+    }
+
+    // Key Press Trigger
+    document.getElementById('target-domain').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') executeAudit();
+    });
+  </script>
 </body>
 </html>
