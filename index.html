@@ -139,6 +139,7 @@
           <input 
             type="text" 
             id="target-domain" 
+            autocomplete="off"
             placeholder="solana.com, paystack.com, flutterwave.com..." 
             class="w-full bg-slate-50 dark:bg-[#070D18] border border-slate-300 dark:border-slate-700 focus:border-blue-600 text-sm font-mono text-slate-900 dark:text-white placeholder-slate-400 rounded-xl pl-20 pr-32 py-2.5 transition focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             value="solana.com"
@@ -151,6 +152,9 @@
             <span>RUN AUDIT</span>
             <i data-lucide="zap" class="w-3.5 h-3.5"></i>
           </button>
+
+          <!-- URL SUGGESTOR DROPDOWN -->
+          <div id="domain-suggestions" class="hidden absolute top-full left-0 mt-1.5 w-full bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden text-xs font-mono max-h-72 overflow-y-auto"></div>
         </div>
       </div>
 
@@ -551,14 +555,115 @@
       executeAudit();
     }
 
-    // Sanitize user-entered domain: strip protocol, path, trailing slash, whitespace
+    // Sanitize user-entered domain: strip protocol, path, query, fragment,
+    // port, www, trailing dot, whitespace. Handles any protocol (http/https/
+    // ftp/mailto), not just http(s) — the old version broke on ftp:// links.
     function sanitizeDomain(raw) {
       let d = raw.trim().toLowerCase();
-      d = d.replace(/^https?:\/\//, '');
-      d = d.split('/')[0];
-      d = d.split(':')[0]; // strip port if present
+      d = d.replace(/^[a-z][a-z0-9+.-]*:\/\//, '');   // strip ANY protocol://
+      d = d.replace(/^mailto:/, '');                   // strip mailto: (no //)
+      d = d.split('#')[0];                              // strip fragment
+      d = d.split('?')[0];                              // strip query string
+      d = d.split('/')[0];                              // strip path
+      d = d.split(':')[0];                               // strip port
       d = d.replace(/^www\./, '');
+      d = d.replace(/\.+$/, '');                         // strip trailing dot(s) — FQDN notation
       return d;
+    }
+
+    // Real validation — catches garbage input (empty, spaces, no TLD, invalid
+    // chars) before we waste a DoH/crt.sh/RDAP round-trip on nonsense.
+    function isValidDomain(d) {
+      if (!d || d.length > 253) return false;
+      return /^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i.test(d);
+    }
+
+    // ============================================================
+    // URL SUGGESTOR — live autocomplete as the user types.
+    // Two sources: a curated list of common targets (fintech/crypto/dev infra,
+    // matching the existing presets bar) and the user's own recent scans,
+    // remembered locally via localStorage (this is a standalone downloaded
+    // file the user runs in their own browser — not a hosted app — so
+    // localStorage is the right tool here, not a privacy concern).
+    // ============================================================
+
+    const SUGGESTED_DOMAINS = [
+      'solana.com', 'paystack.com', 'flutterwave.com', 'moniepoint.com',
+      'opay.com', 'kuda.com', 'palmpay.com', 'interswitchgroup.com',
+      'github.com', 'cloudflare.com', 'anthropic.com'
+    ];
+    const RECENT_SCANS_KEY = 'nuex_recent_scans';
+    const MAX_RECENT = 8;
+
+    function getRecentScans() {
+      try { return JSON.parse(localStorage.getItem(RECENT_SCANS_KEY)) || []; }
+      catch (e) { return []; }
+    }
+
+    function saveRecentScan(domain) {
+      try {
+        let recent = getRecentScans().filter(d => d !== domain);
+        recent.unshift(domain);
+        recent = recent.slice(0, MAX_RECENT);
+        localStorage.setItem(RECENT_SCANS_KEY, JSON.stringify(recent));
+      } catch (e) { /* localStorage unavailable — fail silently, not core functionality */ }
+    }
+
+    let suggestionActiveIndex = -1;
+
+    function renderSuggestions() {
+      const raw = document.getElementById('target-domain').value.trim().toLowerCase();
+      const box = document.getElementById('domain-suggestions');
+      const recent = getRecentScans();
+
+      let pool;
+      if (!raw) {
+        pool = [...recent.map(d => ({ domain: d, tag: 'RECENT' })), ...SUGGESTED_DOMAINS.filter(d => !recent.includes(d)).map(d => ({ domain: d, tag: 'SUGGESTED' }))];
+      } else {
+        pool = [...recent.map(d => ({ domain: d, tag: 'RECENT' })), ...SUGGESTED_DOMAINS.map(d => ({ domain: d, tag: 'SUGGESTED' }))]
+          .filter(({ domain }, idx, arr) => arr.findIndex(x => x.domain === domain) === idx)
+          .filter(({ domain }) => domain.includes(raw));
+      }
+
+      pool = pool.slice(0, 8);
+      suggestionActiveIndex = -1;
+
+      if (pool.length === 0) {
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+      }
+
+      box.innerHTML = pool.map(({ domain, tag }, i) => `
+        <div class="suggestion-item px-3 py-2 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer border-b border-slate-100 dark:border-slate-800 last:border-0" data-index="${i}" data-domain="${domain}" onclick="selectSuggestion('${domain}')">
+          <span class="text-slate-800 dark:text-slate-200">${domain}</span>
+          <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${tag === 'RECENT' ? 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}">${tag}</span>
+        </div>
+      `).join('');
+      box.classList.remove('hidden');
+    }
+
+    function selectSuggestion(domain) {
+      document.getElementById('target-domain').value = domain;
+      hideSuggestions();
+      executeAudit();
+    }
+
+    function hideSuggestions() {
+      const box = document.getElementById('domain-suggestions');
+      box.classList.add('hidden');
+      suggestionActiveIndex = -1;
+    }
+
+    function highlightSuggestion(delta) {
+      const box = document.getElementById('domain-suggestions');
+      const items = box.querySelectorAll('.suggestion-item');
+      if (items.length === 0) return;
+      suggestionActiveIndex = (suggestionActiveIndex + delta + items.length) % items.length;
+      items.forEach((el, i) => {
+        el.classList.toggle('bg-slate-100', i === suggestionActiveIndex);
+        el.classList.toggle('dark:bg-slate-800', i === suggestionActiveIndex);
+      });
     }
 
     // Log Drawer Function
@@ -810,8 +915,8 @@
 
       const btn = document.getElementById('scan-btn');
 
-      if (!domain) {
-        showToast("Please enter a valid domain!");
+      if (!isValidDomain(domain)) {
+        showToast(domain ? `"${domain}" doesn't look like a valid domain` : "Please enter a domain!");
         return;
       }
 
@@ -1033,6 +1138,7 @@
 
         appendLog(`[COMPLETE] Security Audit completed for ${domain}. Score: ${score}/100`, 'success');
         showToast(`Audit finished for ${domain}`);
+        saveRecentScan(domain);
 
       } catch (err) {
         appendLog(`[ERROR] Audit query failed: ${err.message}`, 'error');
@@ -1071,10 +1177,39 @@
       window.print();
     }
 
-    // Key Press Trigger
-    document.getElementById('target-domain').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') executeAudit();
-    });
+    // Key Press / Suggestor Event Wiring
+    (function wireDomainInput() {
+      const input = document.getElementById('target-domain');
+      if (!input) return;
+
+      input.addEventListener('focus', renderSuggestions);
+      input.addEventListener('input', renderSuggestions);
+
+      input.addEventListener('keydown', (e) => {
+        const box = document.getElementById('domain-suggestions');
+        const items = box.querySelectorAll('.suggestion-item');
+        const suggestionsOpen = !box.classList.contains('hidden') && items.length > 0;
+
+        if (e.key === 'ArrowDown' && suggestionsOpen) { e.preventDefault(); highlightSuggestion(1); return; }
+        if (e.key === 'ArrowUp' && suggestionsOpen) { e.preventDefault(); highlightSuggestion(-1); return; }
+        if (e.key === 'Escape') { hideSuggestions(); return; }
+        if (e.key === 'Enter') {
+          if (suggestionsOpen && suggestionActiveIndex >= 0) {
+            e.preventDefault();
+            selectSuggestion(items[suggestionActiveIndex].getAttribute('data-domain'));
+          } else {
+            hideSuggestions();
+            executeAudit();
+          }
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#target-domain') && !e.target.closest('#domain-suggestions')) {
+          hideSuggestions();
+        }
+      });
+    })();
   </script>
 </body>
 </html>
