@@ -128,7 +128,7 @@
             <h1 class="text-xl font-extrabold tracking-wider text-slate-900 dark:text-white">NUEX</h1>
             <span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-mono font-bold">SOC v3.0</span>
           </div>
-          <p class="text-[10px] font-mono text-slate-500 dark:text-slate-400 tracking-widest uppercase">DNS · Email Auth · Headers · Subdomains</p>
+          <p class="text-[10px] font-mono text-slate-500 dark:text-slate-400 tracking-widest uppercase">DNS · Email Auth · Headers · Trust & Compliance</p>
         </div>
       </div>
 
@@ -197,7 +197,7 @@
   <main class="flex-1 max-w-[1700px] w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
 
     <!-- TOP KPI EXECUTIVE SCORECARDS -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
 
       <!-- Overall Security Score -->
       <div class="kpi-card bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm print-border">
@@ -256,6 +256,23 @@
           </div>
         </div>
         <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 block">SPF & DMARC Validation</span>
+      </div>
+
+      <!-- Custodial Trust Score -->
+      <div class="kpi-card bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm print-border">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block mb-1">Custodial Trust</span>
+            <div class="flex items-baseline gap-2">
+              <span id="trust-score-val" class="text-3xl font-black text-slate-900 dark:text-white">—</span>
+              <span class="text-xs font-mono text-slate-400">/ 100</span>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
+            <i data-lucide="banknote" class="w-6 h-6"></i>
+          </div>
+        </div>
+        <span id="trust-score-status" class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 block">Would you trust this domain with money?</span>
       </div>
 
     </section>
@@ -430,6 +447,58 @@
 
     </div>
 
+    <!-- TRUST & COMPLIANCE LAYER -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- 07. NDPR / ISO 27001 COMPLIANCE READINESS -->
+      <div class="lg:col-span-7 bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm print-border">
+        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-200 dark:border-slate-800 flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <i data-lucide="clipboard-check" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
+            <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">07 · NDPR / ISO 27001 Compliance Readiness</h3>
+          </div>
+          <span id="compliance-pct" class="text-[10px] font-mono bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 px-2 py-0.5 rounded font-bold">— % READY</span>
+        </div>
+
+        <div id="compliance-container" class="space-y-2 text-xs font-mono">
+          <p class="text-slate-400 italic">Run an audit to map existing signals against real NDPR &amp; ISO 27001 controls — no new scans required, this reuses the DNS/email/header data above.</p>
+        </div>
+        <p class="text-[10px] text-slate-400 italic leading-relaxed pt-3 border-t border-slate-100 dark:border-slate-800/60 mt-3">This is a technical-signal readiness check, not a legal compliance certification. Controls marked "Unable to verify" require server-side confirmation and should not be reported as failing.</p>
+      </div>
+
+      <!-- 08. DOMAIN TRUST INTELLIGENCE (RDAP) -->
+      <div class="lg:col-span-5 bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm print-border">
+        <div class="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
+          <div class="flex items-center gap-2">
+            <i data-lucide="fingerprint" class="w-4 h-4 text-rose-600 dark:text-rose-400"></i>
+            <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">08 · Domain Trust Intelligence</h3>
+          </div>
+          <span id="rdap-status-tag" class="text-[10px] font-mono text-slate-400 font-bold">PENDING</span>
+        </div>
+
+        <div class="space-y-3 font-mono text-xs">
+          <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+            <span class="text-slate-500">Domain Registered:</span>
+            <span id="rdap-reg-date-val" class="font-bold text-slate-900 dark:text-white">—</span>
+          </div>
+          <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+            <span class="text-slate-500">Domain Age:</span>
+            <span id="rdap-age-val" class="font-bold text-slate-900 dark:text-white">—</span>
+          </div>
+          <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+            <span class="text-slate-500">Age Risk Flag:</span>
+            <span id="rdap-flag-val" class="font-bold text-slate-900 dark:text-white">—</span>
+          </div>
+          <p class="text-[10px] text-slate-400 italic leading-relaxed pt-1">Freshly-registered domains impersonating banks, fintechs, or logistics platforms are a classic scam pattern. RDAP lookups can fail for CORS or registry reasons — "Unable to verify" is honest, not a red flag by itself.</p>
+
+          <div id="trust-factors-container" class="pt-3 border-t border-slate-100 dark:border-slate-800/60 space-y-1.5">
+            <p class="text-slate-400 italic">Trust factor breakdown will appear here after audit.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
     <!-- FOOTER -->
     <footer class="no-print text-center text-xs font-mono text-slate-400 pt-4 pb-6">
       NUEX PAN-AFRICAN CYBER DEFENSE PLATFORM — LAGOS, NIGERIA
@@ -551,6 +620,114 @@
         result.reachable = 'unverifiable';
       }
       return result;
+    }
+
+    // RDAP Domain Registration Lookup — via rdap.org bootstrap, which routes to the
+    // authoritative registry RDAP server. CORS support varies by registry/TLD, so we
+    // never fabricate a fallback date. Failure just means "unable to verify."
+    async function fetchDomainAge(domain) {
+      try {
+        const res = await fetch(`https://rdap.org/domain/${encodeURIComponent(domain)}`, {
+          headers: { 'Accept': 'application/rdap+json' }
+        });
+        if (!res.ok) return { ok: false, reason: `RDAP lookup returned HTTP ${res.status}` };
+        const data = await res.json();
+        const regEvent = (data.events || []).find(e => e.eventAction === 'registration');
+        if (!regEvent || !regEvent.eventDate) return { ok: false, reason: 'No registration event in RDAP response' };
+        const regDate = new Date(regEvent.eventDate);
+        const ageDays = Math.floor((Date.now() - regDate.getTime()) / 86400000);
+        return { ok: true, ageDays, regDate };
+      } catch (e) {
+        return { ok: false, reason: 'RDAP unreachable (network/CORS/unsupported TLD)' };
+      }
+    }
+
+    // Custodial Trust Score — reframes the same confirmed signals (HTTPS, SPF, DMARC,
+    // HSTS, CSP) plus domain age into a plain-English "would you trust this with money"
+    // verdict for non-technical users (fintech/gig-logistics customers, not just admins).
+    function computeTrustScore(spfRecord, dmarcRecord, httpsResult, ageResult) {
+      let score = 0;
+      const factors = [];
+
+      const httpsOk = httpsResult.reachable === true;
+      score += httpsOk ? 25 : 0;
+      factors.push({ label: 'HTTPS Reachable', pass: httpsOk, note: httpsOk ? 'Confirmed' : 'Unable to verify (CORS) — not necessarily absent' });
+
+      score += spfRecord ? 20 : 0;
+      factors.push({ label: 'Anti-Spoofing (SPF)', pass: !!spfRecord, note: spfRecord ? 'Configured' : 'Missing — vulnerable to email impersonation' });
+
+      score += dmarcRecord ? 20 : 0;
+      factors.push({ label: 'Anti-Phishing (DMARC)', pass: !!dmarcRecord, note: dmarcRecord ? 'Configured' : 'Missing — vulnerable to brand spoofing' });
+
+      const hstsOk = httpsResult.hsts === 'present';
+      score += hstsOk ? 10 : (httpsResult.hsts === 'unreadable' ? 5 : 0);
+      factors.push({ label: 'Forced Encryption (HSTS)', pass: hstsOk ? true : null, note: hstsOk ? 'Confirmed' : 'Unable to verify (CORS)' });
+
+      const cspOk = httpsResult.csp === 'present';
+      score += cspOk ? 10 : (httpsResult.csp === 'unreadable' ? 5 : 0);
+      factors.push({ label: 'Web Hardening (CSP)', pass: cspOk ? true : null, note: cspOk ? 'Confirmed' : 'Unable to verify (CORS)' });
+
+      if (ageResult.ok) {
+        const years = ageResult.ageDays / 365;
+        const ageScore = years >= 2 ? 15 : years >= 1 ? 10 : years >= 0.25 ? 4 : 0;
+        score += ageScore;
+        factors.push({
+          label: 'Domain Maturity',
+          pass: years >= 1,
+          note: years < 0.25 ? `⚠ Registered ${ageResult.ageDays} days ago — classic scam-domain pattern` : `${years.toFixed(1)} years old`
+        });
+      } else {
+        score += 7; // neutral partial credit — genuinely unknown, not penalized as a red flag
+        factors.push({ label: 'Domain Maturity', pass: null, note: `Unable to verify — ${ageResult.reason}` });
+      }
+
+      score = Math.min(100, Math.round(score));
+      let verdict, colorClass;
+      if (score >= 75) { verdict = 'HIGH TRUST'; colorClass = 'text-emerald-600 dark:text-emerald-400'; }
+      else if (score >= 50) { verdict = 'MODERATE TRUST'; colorClass = 'text-amber-500'; }
+      else { verdict = 'LOW TRUST — VERIFY BEFORE SENDING MONEY'; colorClass = 'text-rose-600'; }
+
+      return { score, verdict, colorClass, factors };
+    }
+
+    // Maps the SAME confirmed signals above to real compliance controls (NDPR + ISO 27001).
+    // No new scans — pure re-interpretation of existing data for a non-security audience.
+    function renderCompliance(spfRecord, dmarcRecord, httpsResult) {
+      const httpsOk = httpsResult.reachable === true;
+      const hstsState = httpsResult.hsts === 'present' ? true : (httpsResult.hsts === 'unreadable' ? null : null);
+      const cspState = httpsResult.csp === 'present' ? true : (httpsResult.csp === 'unreadable' ? null : null);
+
+      const controls = [
+        { name: 'Transport Layer Security', ref: 'NDPR Art. 2.6(1)(f) · ISO 27001 A.8.24', state: httpsOk ? true : null },
+        { name: 'Email Anti-Spoofing (SPF)', ref: 'NDPR Art. 2.6 · ISO 27001 A.5.14', state: !!spfRecord },
+        { name: 'Domain Message Authentication (DMARC)', ref: 'NDPR Art. 2.6 · ISO 27001 A.5.14', state: !!dmarcRecord },
+        { name: 'Forced HTTPS (HSTS)', ref: 'ISO 27001 A.8.24', state: hstsState },
+        { name: 'XSS/Injection Hardening (CSP)', ref: 'ISO 27001 A.8.26', state: cspState },
+      ];
+
+      const verifiable = controls.filter(c => c.state !== null);
+      const passed = verifiable.filter(c => c.state === true).length;
+      const pct = verifiable.length ? Math.round((passed / verifiable.length) * 100) : 0;
+
+      document.getElementById('compliance-pct').innerText = `${pct}% READY`;
+
+      const container = document.getElementById('compliance-container');
+      container.innerHTML = controls.map(c => {
+        const badge = c.state === true
+          ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">✓ PASS</span>`
+          : c.state === false
+          ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400">✕ FAIL</span>`
+          : `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">⚠ UNABLE TO VERIFY</span>`;
+        return `
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+            <div>
+              <div class="font-bold text-slate-900 dark:text-white">${c.name}</div>
+              <div class="text-[10px] text-slate-400">${c.ref}</div>
+            </div>
+            ${badge}
+          </div>
+        `;
+      }).join('');
     }
 
     function setBadge(elId, state, presentText = '✓ PRESENT', absentText = '✕ MISSING', unknownText = '⚠ UNABLE TO VERIFY') {
@@ -743,6 +920,64 @@
 
         appendLog(`[HTTPS] Transport check complete`, 'success');
 
+        // RDAP Domain Age Lookup
+        appendLog(`[RDAP] Querying domain registration data for ${domain}`, 'action');
+        const ageResult = await fetchDomainAge(domain);
+        const rdapTag = document.getElementById('rdap-status-tag');
+        const regDateEl = document.getElementById('rdap-reg-date-val');
+        const ageEl = document.getElementById('rdap-age-val');
+        const flagEl = document.getElementById('rdap-flag-val');
+
+        if (ageResult.ok) {
+          const years = (ageResult.ageDays / 365).toFixed(1);
+          rdapTag.innerText = 'CONFIRMED';
+          rdapTag.className = 'text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold';
+          regDateEl.innerText = ageResult.regDate.toISOString().split('T')[0];
+          ageEl.innerText = `${ageResult.ageDays} days (~${years} yrs)`;
+          if (ageResult.ageDays < 90) {
+            flagEl.innerText = '⚠ NEW DOMAIN';
+            flagEl.className = 'font-bold text-rose-600 dark:text-rose-400';
+          } else {
+            flagEl.innerText = '✓ Established';
+            flagEl.className = 'font-bold text-emerald-600 dark:text-emerald-400';
+          }
+          appendLog(`[RDAP] Domain registered ${ageResult.regDate.toISOString().split('T')[0]}`, 'success');
+        } else {
+          rdapTag.innerText = 'UNAVAILABLE';
+          rdapTag.className = 'text-[10px] font-mono text-amber-600 dark:text-amber-400 font-bold';
+          regDateEl.innerText = 'Unable to verify';
+          regDateEl.className = 'font-bold text-amber-600 dark:text-amber-400';
+          ageEl.innerText = 'Unable to verify';
+          ageEl.className = 'font-bold text-amber-600 dark:text-amber-400';
+          flagEl.innerText = `⚠ ${ageResult.reason}`;
+          flagEl.className = 'font-bold text-amber-600 dark:text-amber-400';
+          appendLog(`[RDAP] Lookup failed: ${ageResult.reason}`, 'warn');
+        }
+
+        // Custodial Trust Score — plain-English "would you trust this with money" verdict
+        const trust = computeTrustScore(spfRecord, dmarcRecord, httpsResult, ageResult);
+        document.getElementById('trust-score-val').innerText = trust.score;
+        document.getElementById('trust-score-val').className = `text-3xl font-black ${trust.colorClass}`;
+        document.getElementById('trust-score-status').innerText = trust.verdict;
+        document.getElementById('trust-score-status').className = `text-[11px] font-mono mt-2 block font-bold ${trust.colorClass}`;
+
+        const factorsContainer = document.getElementById('trust-factors-container');
+        factorsContainer.innerHTML = trust.factors.map(f => {
+          const dot = f.pass === true ? 'bg-emerald-500' : f.pass === false ? 'bg-rose-500' : 'bg-amber-500';
+          return `
+            <div class="flex items-center gap-2 text-[10px]">
+              <span class="w-1.5 h-1.5 rounded-full ${dot} shrink-0"></span>
+              <span class="text-slate-500 dark:text-slate-400">${f.label}:</span>
+              <span class="text-slate-700 dark:text-slate-300">${f.note}</span>
+            </div>
+          `;
+        }).join('');
+
+        // NDPR / ISO 27001 Compliance Readiness Panel — reuses the same confirmed signals
+        renderCompliance(spfRecord, dmarcRecord, httpsResult);
+
+        appendLog(`[TRUST] Custodial Trust Score: ${trust.score}/100 (${trust.verdict})`, 'success');
+
         // Generate Plain-English Fix Recommendations (only for things we can actually confirm)
         const remContainer = document.getElementById('remediation-container');
         let remHtml = '';
@@ -816,6 +1051,11 @@
         domain: domain,
         timestamp: new Date().toISOString(),
         score: document.getElementById('score-val').innerText,
+        custodialTrustScore: document.getElementById('trust-score-val').innerText,
+        trustVerdict: document.getElementById('trust-score-status').innerText,
+        complianceReadiness: document.getElementById('compliance-pct').innerText,
+        domainRegistered: document.getElementById('rdap-reg-date-val').innerText,
+        domainAge: document.getElementById('rdap-age-val').innerText,
         dnsRecords: currentDnsRecords
       }, null, 2));
       const downloadAnchor = document.createElement('a');
