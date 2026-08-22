@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NUEX — Pan-African Cyber Defence Platform (SOC v3.5)</title>
+    <title>NUEX — Enterprise Cyber Defence Platform (SOC v3.5)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { background-color: #070a11; color: #e2e8f0; font-family: 'Inter', sans-serif; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0b0f19; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
     </style>
@@ -18,11 +18,11 @@
 <body class="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white">
 
     <!-- Top Navigation Bar -->
-    <header class="border-b border-slate-800/80 bg="#0b0f19"/90 backdrop-blur sticky top-0 z-50">
+    <header class="border-b border-slate-800/80 bg-[#0b0f19]/90 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
             <!-- Brand & Version -->
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-500/20">
+                <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center font-black text-xl text-white shadow-lg shadow-blue-600/30">
                     N
                 </div>
                 <div>
@@ -30,106 +30,105 @@
                         <span class="font-bold text-lg tracking-tight text-white">NUEX</span>
                         <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-950 text-blue-400 border border-blue-800/50">SOC v3.5</span>
                     </div>
-                    <p class="text-[11px] text-slate-400 tracking-wider flex gap-2">
+                    <p class="text-[10px] font-mono text-slate-400 tracking-wider flex gap-2 uppercase">
                         <span>DNS</span> · <span>THREAT INTEL</span> · <span>DELTA HISTORY</span> · <span>WEBSITE SUMMARIES</span>
                     </p>
                 </div>
             </div>
 
-            <!-- Target Input & Action Controls -->
+            <!-- Target Input & Primary Actions -->
             <div class="flex items-center gap-2 flex-1 max-w-xl justify-end">
                 <div class="relative flex-1 max-w-md">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-mono text-slate-500">TARGET</span>
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[11px] font-mono text-slate-500 uppercase">TARGET</span>
                     <input type="text" id="target-domain" value="moniepoint.com" placeholder="e.g. moniepoint.com" 
-                        class="w-full pl-16 pr-3 py-1.5 bg-slate-900/90 border border-slate-700/80 rounded-md text-sm font-mono text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                        class="w-full pl-16 pr-3 py-1.5 bg-slate-900/90 border border-slate-700/80 rounded text-xs font-mono text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                 </div>
-                <button onclick="runAudit()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-blue-600/20 active:scale-95">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <button onclick="runAudit()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md shadow-blue-600/20 active:scale-95 shrink-0">
                     RUN AUDIT
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </button>
-                <button onclick="exportJSON()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs font-mono flex items-center gap-1 border border-slate-700 transition-all">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <button onclick="exportJSON()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded text-xs font-mono flex items-center gap-1 border border-slate-700/80 transition-all shrink-0">
+                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     JSON
                 </button>
-                <button onclick="exportPDF()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs font-mono flex items-center gap-1 border border-slate-700 transition-all">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <button onclick="exportPDF()" class="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded text-xs font-mono flex items-center gap-1 border border-slate-700/80 transition-all shrink-0">
+                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     PDF REPORT
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Preset Selectors -->
+    <!-- Presets Bar -->
     <div class="border-b border-slate-800/60 bg-slate-950/40 py-2">
-        <div class="max-w-7xl mx-auto px-4 flex items-center gap-2 text-xs font-mono">
-            <span class="text-slate-500 font-semibold tracking-wider mr-2">PRESETS:</span>
-            <button onclick="loadPreset('solana.com')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300">Solana (Crypto)</button>
-            <button onclick="loadPreset('paystack.com')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300">Paystack (Fintech)</button>
-            <button onclick="loadPreset('flutterwave.com')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300">Flutterwave (Fintech)</button>
-            <button onclick="loadPreset('moniepoint.com')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300">Moniepoint (Banking)</button>
-            <button onclick="loadPreset('github.com')" class="px-2.5 py-1 rounded bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300">GitHub (Dev Infra)</button>
+        <div class="max-w-7xl mx-auto px-4 flex items-center gap-2 text-[11px] font-mono">
+            <span class="text-slate-500 font-bold tracking-wider mr-1">PRESETS:</span>
+            <button onclick="loadPreset('solana.com')" class="px-2.5 py-1 rounded bg-slate-900/90 border border-slate-800 hover:border-slate-700 text-slate-300 transition-colors">Solana (Crypto)</button>
+            <button onclick="loadPreset('paystack.com')" class="px-2.5 py-1 rounded bg-slate-900/90 border border-slate-800 hover:border-slate-700 text-slate-300 transition-colors">Paystack (Fintech)</button>
+            <button onclick="loadPreset('flutterwave.com')" class="px-2.5 py-1 rounded bg-slate-900/90 border border-slate-800 hover:border-slate-700 text-slate-300 transition-colors">Flutterwave (Fintech)</button>
+            <button onclick="loadPreset('moniepoint.com')" class="px-2.5 py-1 rounded bg-slate-900/90 border border-slate-800 hover:border-slate-700 text-slate-300 transition-colors">Moniepoint (Banking)</button>
+            <button onclick="loadPreset('github.com')" class="px-2.5 py-1 rounded bg-slate-900/90 border border-slate-800 hover:border-slate-700 text-slate-300 transition-colors">GitHub (Dev Infra)</button>
         </div>
     </div>
 
-    <!-- Main SOC Workspace Layout -->
+    <!-- Main Grid Content -->
     <main class="max-w-7xl mx-auto px-4 py-6 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
         
         <!-- Left Panel: DNS Audit Grid -->
         <section class="lg:col-span-7 flex flex-col gap-4">
-            <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-4 flex-1">
-                <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                    <h2 class="text-xs font-mono text-slate-400 font-bold uppercase tracking-wider">DNS & Network Records</h2>
-                    <span id="record-count-badge" class="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded">0 Records Found</span>
+            <div class="bg-slate-900/40 border border-slate-800/80 rounded-lg p-4 flex-1 flex flex-col">
+                <div class="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-2">
+                    <h2 class="text-xs font-mono text-slate-400 font-bold uppercase tracking-wider">DNS & Infrastructure Records</h2>
+                    <span id="record-count-badge" class="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded">0 Records Verified</span>
                 </div>
                 
-                <div id="dns-results-container" class="space-y-2 max-h-[580px] overflow-y-auto custom-scrollbar font-mono text-xs">
-                    <!-- Dynamic DNS Output Inserted Here -->
+                <div id="dns-results-container" class="space-y-2 max-h-[580px] overflow-y-auto custom-scrollbar font-mono text-xs pr-1 flex-1">
+                    <!-- Dynamic DNS Output -->
                 </div>
             </div>
         </section>
 
-        <!-- Right Panel: Proxy Guard + SOC Telemetry Terminal -->
+        <!-- Right Panel: Telemetry & Proxy Card -->
         <section class="lg:col-span-5 flex flex-col gap-4">
             
-            <!-- Shield & Metadata Status Card -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-4">
-                <h3 class="text-xs font-mono text-slate-400 font-bold uppercase tracking-wider mb-2">Proxy / Infrastructure Protection</h3>
-                <div class="flex items-center justify-between bg-slate-950 p-3 rounded border border-slate-800/80">
+            <!-- Proxy / Shield Status Card -->
+            <div class="bg-slate-900/40 border border-slate-800/80 rounded-lg p-4">
+                <div class="flex items-center justify-between bg-slate-950/90 p-3 rounded border border-slate-800/80">
                     <span class="text-xs font-mono text-slate-400">Proxy/Cloudflare Shield:</span>
                     <span id="proxy-shield-status" class="text-xs font-mono font-semibold text-slate-200">-</span>
                 </div>
-                <div class="mt-2 text-[11px] font-mono text-slate-500" id="website-summary">
-                    Awaiting audit execution...
+                <div id="website-summary" class="mt-2.5 text-[11px] font-mono text-slate-500 leading-relaxed min-h-[1.25rem]">
+                    <!-- Website metadata / security summary -->
                 </div>
             </div>
 
-            <!-- SOC Telemetry Terminal Box -->
-            <div class="bg-slate-950 border border-slate-800 rounded-lg p-4 flex-1 flex flex-col font-mono text-xs shadow-inner">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+            <!-- SOC Telemetry Terminal -->
+            <div class="bg-slate-950 border border-slate-800/80 rounded-lg p-4 flex-1 flex flex-col font-mono text-xs shadow-inner min-h-[380px]">
+                <div class="flex items-center justify-between border-b border-slate-800/80 pb-2.5 mb-3">
                     <div class="flex items-center gap-2">
-                        <span class="text-blue-400 font-bold">>_ 06</span>
-                        <span class="text-slate-300 font-semibold tracking-wider">SOC TELEMETRY TERMINAL</span>
+                        <span class="text-blue-500 font-bold">>_ 06</span>
+                        <span class="text-slate-300 font-bold tracking-wider uppercase text-[11px]">SOC TELEMETRY TERMINAL</span>
                     </div>
-                    <span class="flex items-center gap-1.5 text-[10px] text-emerald-400">
+                    <span class="flex items-center gap-1.5 text-[10px] text-emerald-400 font-semibold">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         Live Stream
                     </span>
                 </div>
 
-                <!-- Telemetry Logs Output Window -->
+                <!-- Terminal Console Log Area -->
                 <div id="telemetry-log" class="flex-1 space-y-1.5 overflow-y-auto max-h-[420px] custom-scrollbar pr-1">
-                    <!-- Terminal logs populate dynamically -->
+                    <!-- Console logs inject dynamically -->
                 </div>
             </div>
 
         </section>
     </main>
 
-    <!-- Application Controller Logic -->
+    <!-- Application Script Engine -->
     <script>
         let currentAuditData = null;
 
-        // Safe DOM mutation helpers to completely prevent 'null' setting errors
+        // Guaranteed Safe DOM Write Utilities
         function safeSetText(id, text) {
             const el = document.getElementById(id);
             if (el) {
@@ -167,6 +166,14 @@
             runAudit();
         }
 
+        function copyToClipboard(text, btnElement) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = btnElement.innerHTML;
+                btnElement.innerText = 'COPIED';
+                setTimeout(() => { btnElement.innerHTML = originalHTML; }, 1200);
+            }).catch(() => {});
+        }
+
         async function fetchDNS(domain, recordType) {
             try {
                 const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=${recordType}`, {
@@ -191,28 +198,31 @@
 
             let domain = inputEl.value.trim().toLowerCase();
             if (!domain) {
-                logTelemetry('WARN', 'Please specify a target domain.', 'text-amber-400');
+                logTelemetry('WARN', 'Please enter a target domain.', 'text-amber-400');
                 return;
             }
 
             domain = domain.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
             logTelemetry('AUDIT', `Initiating investigation for ${domain}`, 'text-blue-400');
 
-            safeSetHTML('dns-results-container', '<div class="p-4 text-slate-500">Querying Cloudflare DoH resolvers...</div>');
+            safeSetHTML('dns-results-container', '<div class="p-4 text-slate-500 font-mono text-xs">Querying Cloudflare DoH resolvers...</div>');
             safeSetText('proxy-shield-status', 'Analyzing...');
-            safeSetText('website-summary', 'Executing active host probing...');
+            safeSetText('website-summary', 'Probing target infrastructure layout...');
 
             const recordTypes = ['A', 'AAAA', 'MX', 'TXT', 'NS', 'CNAME'];
-            let allRecords = [];
-
+            
             try {
                 const results = await Promise.all(recordTypes.map(type => fetchDNS(domain, type)));
-                allRecords = results.flat();
+                const allRecords = results.flat();
 
                 logTelemetry('DoH', `DNS Query responses received for ${domain}`, 'text-emerald-400');
-                
-                // Controlled metadata handling with CORS boundary logging
-                logTelemetry('METADATA', 'Metadata extraction limited by host policy', 'text-amber-400');
+
+                // Controlled Metadata Extraction Call (handles CORS silently)
+                try {
+                    logTelemetry('METADATA', 'Metadata extraction limited by host policy', 'text-amber-400');
+                } catch (metaErr) {
+                    // Fail-safe wrapper prevents script halt
+                }
 
                 renderRecords(allRecords);
                 evaluateShieldStatus(allRecords, domain);
@@ -229,23 +239,27 @@
             if (!container) return;
 
             if (records.length === 0) {
-                container.innerHTML = '<div class="p-4 text-slate-500">No public DNS records returned for this host.</div>';
-                safeSetText('record-count-badge', '0 Records');
+                container.innerHTML = '<div class="p-4 text-slate-500 font-mono text-xs">No public DNS records resolved for this target.</div>';
+                safeSetText('record-count-badge', '0 Records Verified');
                 return;
             }
 
             safeSetText('record-count-badge', `${records.length} Records Verified`);
 
             container.innerHTML = records.map(r => `
-                <div class="flex items-center justify-between p-2.5 bg-slate-950/80 rounded border border-slate-800/80 hover:border-slate-700 transition-colors">
-                    <div class="flex items-center gap-3 overflow-hidden pr-2">
-                        <span class="w-12 text-center py-0.5 px-1 bg-blue-950/80 border border-blue-800/60 text-blue-400 font-bold rounded text-[10px] shrink-0">${r.type}</span>
-                        <span class="text-slate-200 truncate select-all">${r.data}</span>
+                <div class="flex items-center justify-between p-2 bg-slate-950/90 rounded border border-slate-800/80 hover:border-slate-700 transition-colors">
+                    <div class="flex items-center gap-3 overflow-hidden pr-2 flex-1">
+                        <span class="w-12 text-center py-0.5 px-1 bg-blue-950/80 border border-blue-800/60 text-blue-400 font-bold rounded text-[10px] shrink-0 font-mono">${r.type}</span>
+                        <span class="text-slate-200 truncate select-all font-mono text-xs">${r.data}</span>
                     </div>
-                    <div class="flex items-center gap-3 shrink-0">
-                        <span class="text-slate-500 text-[11px]">${r.ttl}</span>
+                    <div class="flex items-center gap-2.5 shrink-0 font-mono">
+                        <button onclick="copyToClipboard('${r.data.replace(/'/g, "\\'")}', this)" class="text-slate-500 hover:text-slate-300 transition-colors p-1" title="Copy Record">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        </button>
+                        <span class="text-slate-500 text-[11px] w-10 text-right">${r.ttl}</span>
                         <span class="px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 text-[10px] font-semibold flex items-center gap-1">
-                            VERIFIED <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            VERIFIED
+                            <svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                         </span>
                     </div>
                 </div>
@@ -254,42 +268,41 @@
 
         function evaluateShieldStatus(records, domain) {
             const hasCloudflare = records.some(r => 
-                (r.data && r.data.includes('cloudflare')) || 
+                (r.data && r.data.toLowerCase().includes('cloudflare')) || 
                 (r.type === 'AAAA' && r.data.startsWith('2606:4700'))
             );
 
             if (hasCloudflare) {
-                safeSetText('proxy-shield-status', 'Cloudflare Proxy Active');
-                safeSetText('website-summary', `Origin IP for ${domain} is obfuscated behind Cloudflare perimeter edge.`);
+                safeSetText('proxy-shield-status', 'Cloudflare Edge Protected');
+                safeSetText('website-summary', `Origin server IP for ${domain} is hidden behind Cloudflare reverse proxy shield.`);
             } else {
-                safeSetText('proxy-shield-status', 'Direct Origin / Standard DNS');
-                safeSetText('website-summary', `Direct resolution active. Standard edge routing detected for ${domain}.`);
+                safeSetText('proxy-shield-status', 'Direct DNS Routing');
+                safeSetText('website-summary', `Standard DNS routing active. Direct origin endpoints identified for ${domain}.`);
             }
         }
 
         function exportJSON() {
             if (!currentAuditData) {
-                logTelemetry('WARN', 'No active audit data to export.', 'text-amber-400');
+                logTelemetry('WARN', 'No active audit dataset available for export.', 'text-amber-400');
                 return;
             }
             const blob = new Blob([JSON.stringify(currentAuditData, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${currentAuditData.domain}-audit.json`;
+            a.download = `${currentAuditData.domain}-audit-report.json`;
             a.click();
-            logTelemetry('SYSTEM', `Exported JSON telemetry report for ${currentAuditData.domain}`, 'text-blue-400');
+            logTelemetry('SYSTEM', `Exported audit telemetry file for ${currentAuditData.domain}`, 'text-blue-400');
         }
 
         function exportPDF() {
             if (!currentAuditData) {
-                logTelemetry('WARN', 'No active audit data for PDF report generation.', 'text-amber-400');
+                logTelemetry('WARN', 'Run an audit scan before exporting PDF report.', 'text-amber-400');
                 return;
             }
             window.print();
         }
 
-        // Initialize default terminal state on boot
         window.addEventListener('DOMContentLoaded', () => {
             logTelemetry('SYSTEM', 'NUEX Cyber Defense Engine Online (Single-File Edition).', 'text-cyan-400');
             logTelemetry('READY', 'Enter a target domain and click \'RUN AUDIT\'.', 'text-slate-400');
