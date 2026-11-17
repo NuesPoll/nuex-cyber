@@ -3,39 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NUEX — Enterprise Cyber Defense & DoH SOC Terminal</title>
-
-  <!-- Tailwind CSS CDN -->
+  <meta name="color-scheme" content="dark light" />
+  <title>NUEX — Enterprise DNS &amp; Trust Audit</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
-
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
-          colors: {
-            soc: {
-              bgLight: '#F8FAFC',
-              bgDark: '#0B1220',
-              panelLight: '#FFFFFF',
-              panelDark: '#111827',
-              panelBorderLight: '#E2E8F0',
-              panelBorderDark: '#1F2937',
-              subLight: '#475569',
-              subDark: '#9CA3AF',
-              brand: '#2563EB',
-              brandHover: '#1D4ED8',
-              emerald: '#10B981',
-              amber: '#F59E0B',
-              rose: '#EF4444',
-              cyan: '#06B6D4'
-            }
-          },
           fontFamily: {
             sans: ['Archivo', 'system-ui', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace']
@@ -44,1110 +22,116 @@
       }
     };
   </script>
-
   <style>
     html { scroll-behavior: smooth; }
-    
-    body {
-      background-color: #F8FAFC;
-      color: #0F172A;
-      transition: background-color 0.2s ease, color 0.2s ease;
-    }
-    .dark body {
-      background-color: #0B1220;
-      color: #F8FAFC;
-    }
-
+    body { background: #F8FAFC; color: #0F172A; }
+    .dark body { background: #0B1220; color: #F8FAFC; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #94A3B8; border-radius: 4px; }
     .dark ::-webkit-scrollbar-thumb { background: #334155; }
-    ::-webkit-scrollbar-thumb:hover { background: #2563EB; }
-
     .kpi-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
     .kpi-card:hover { transform: translateY(-2px); }
-
     .chip-btn[data-active="true"] {
-      background-color: #2563EB;
-      color: #FFFFFF !important;
+      background: #2563EB;
+      color: #fff !important;
       border-color: #2563EB !important;
     }
-
+    #score-ring { transition: stroke-dashoffset 0.5s ease; }
+    [data-stage][data-state="run"] { border-color: #2563EB; color: #93C5FD; }
+    [data-stage][data-state="ok"] { border-color: #10B981; color: #6EE7B7; }
+    [data-stage][data-state="bad"] { border-color: #F59E0B; color: #FCD34D; }
+    .sev-critical { box-shadow: inset 3px 0 0 #EF4444; }
+    .sev-high { box-shadow: inset 3px 0 0 #F97316; }
+    .sev-medium { box-shadow: inset 3px 0 0 #F59E0B; }
+    .sev-low { box-shadow: inset 3px 0 0 #38BDF8; }
+    .sev-info { box-shadow: inset 3px 0 0 #64748B; }
     @media print {
       .no-print { display: none !important; }
       body { background: white !important; color: black !important; }
+      .screen-dark { background: white !important; color: black !important; border-color: #CBD5E1 !important; }
       .print-border { border: 1px solid #CBD5E1 !important; box-shadow: none !important; }
-      .print-break { page-break-before: always; }
     }
   </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col selection:bg-blue-600 selection:text-white">
-
-  <!-- TOP SOC TELEMETRY STRIP -->
-  <div class="no-print bg-slate-100 dark:bg-[#070D18] border-b border-slate-200 dark:border-slate-800/80 px-4 py-1.5 text-[11px] font-mono text-slate-600 dark:text-slate-400 flex items-center justify-between overflow-x-auto whitespace-nowrap">
-    <div class="flex items-center gap-5">
+  <div class="no-print bg-slate-100 dark:bg-[#070D18] border-b border-slate-200 dark:border-slate-800/80 px-4 py-1.5 text-[11px] font-mono text-slate-600 dark:text-slate-400 flex items-center justify-between gap-4 overflow-x-auto whitespace-nowrap">
+    <div class="flex items-center gap-4">
       <div class="flex items-center gap-2">
         <span class="relative flex h-2 w-2">
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
           <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
         </span>
-        <span class="text-slate-900 dark:text-slate-200 font-bold tracking-wider">ENGINE ONLINE</span>
+        <span id="engine-state" class="text-slate-900 dark:text-slate-200 font-bold tracking-wider">ENGINE ONLINE</span>
       </div>
       <span class="text-slate-300 dark:text-slate-700">/</span>
-      <span>RESOLVER: <span class="text-blue-600 dark:text-cyan-400 font-semibold">Cloudflare DoH 1.1.1.1</span></span>
+      <span>RESOLVERS: <span class="text-blue-600 dark:text-cyan-400 font-semibold">Cloudflare + Google DoH</span></span>
       <span class="text-slate-300 dark:text-slate-700">/</span>
-      <span>INTELLIGENCE: <span class="text-purple-600 dark:text-purple-400 font-semibold">Microlink + CRT.sh + IP Matrix</span></span>
+      <span>INTEL: <span class="text-purple-600 dark:text-purple-400 font-semibold">CT · RDAP · IP · DNSBL</span></span>
     </div>
-
-    <div class="flex items-center gap-4">
-      <span class="border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded px-2 py-0.5 text-[10px] font-bold tracking-widest">SINGLE-FILE VERCEL v3.5</span>
-      <span id="clock-display" class="font-mono">00:00:00 UTC</span>
-      <button onclick="toggleTheme()" id="theme-btn" class="border border-slate-300 dark:border-slate-700 hover:border-blue-500 rounded px-2 py-0.5 text-[10px] font-bold transition flex items-center gap-1">
-        <i data-lucide="sun-moon" class="w-3 h-3"></i>
-        <span id="theme-text">THEME</span>
-      </button>
+    <div class="flex items-center gap-3">
+      <span class="border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 rounded px-2 py-0.5 text-[10px] font-bold tracking-widest">SINGLE-FILE v4.0</span>
+      <span id="clock-display">00:00:00 UTC</span>
+      <button type="button" id="theme-btn" class="border border-slate-300 dark:border-slate-700 hover:border-blue-500 rounded px-2 py-0.5 text-[10px] font-bold transition">THEME</button>
     </div>
   </div>
-
-  <!-- NAVIGATION HEADER -->
   <header class="no-print border-b border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0E1726] sticky top-0 z-40 px-4 md:px-8 py-3.5 shadow-sm">
     <div class="max-w-[1700px] mx-auto flex items-center justify-between gap-6 flex-wrap">
-
-      <!-- LOGO -->
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-blue-600 dark:bg-blue-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-500/20">
-          N
-        </div>
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-500/20">N</div>
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-xl font-extrabold tracking-wider text-slate-900 dark:text-white">NUEX</h1>
-            <span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-mono font-bold">SOC v3.5</span>
+            <span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded font-mono font-bold">AUDIT v4</span>
           </div>
-          <p class="text-[10px] font-mono text-slate-500 dark:text-slate-400 tracking-widest uppercase">DNS · Threat Intel · Delta History · Website Summaries</p>
+          <p class="text-[10px] font-mono text-slate-500 dark:text-slate-400 tracking-widest uppercase">DNSSEC · Mail Auth · Certificate Logs · Domain Trust</p>
         </div>
       </div>
-
-      <!-- DOMAIN COMMAND BAR -->
       <div class="flex-1 min-w-[280px] max-w-2xl">
         <div class="relative flex items-center">
-          <span class="absolute left-3.5 text-xs font-mono font-bold text-slate-400 dark:text-slate-500">TARGET</span>
-          <input 
-            type="text" 
-            id="target-domain" 
-            autocomplete="off"
-            placeholder="solana.com, paystack.com, flutterwave.com..." 
-            class="w-full bg-slate-50 dark:bg-[#070D18] border border-slate-300 dark:border-slate-700 focus:border-blue-600 text-sm font-mono text-slate-900 dark:text-white placeholder-slate-400 rounded-xl pl-20 pr-32 py-2.5 transition focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            value="solana.com"
-          />
-          <button 
-            onclick="executeAudit()"
-            id="scan-btn"
-            class="absolute right-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider rounded-lg px-4 py-2 transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-blue-500/20"
-          >
+          <label for="target-domain" class="absolute left-3.5 text-xs font-mono font-bold text-slate-400">TARGET</label>
+          <input id="target-domain" type="text" autocomplete="off" spellcheck="false" value="solana.com" placeholder="solana.com or https://paystack.com/path" class="w-full bg-slate-50 dark:bg-[#070D18] border border-slate-300 dark:border-slate-700 focus:border-blue-600 text-sm font-mono text-slate-900 dark:text-white placeholder-slate-400 rounded-xl pl-20 pr-32 py-2.5 transition focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+          <button type="button" id="scan-btn" class="absolute right-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs tracking-wider rounded-lg px-4 py-2 transition flex items-center gap-1.5 active:scale-95 shadow-md shadow-blue-500/20">
             <span>RUN AUDIT</span>
             <i data-lucide="zap" class="w-3.5 h-3.5"></i>
           </button>
         </div>
       </div>
-
-      <!-- ACTIONS & EXPORT -->
       <div class="flex items-center gap-2 text-xs font-mono">
-        <button onclick="exportJSON()" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-500 text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5" title="Export Raw JSON Data">
-          <i data-lucide="download" class="w-3.5 h-3.5 text-blue-500"></i>
-          <span>JSON</span>
-        </button>
-        <button onclick="exportPDF()" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-500 text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5" title="Print Security Certificate">
-          <i data-lucide="file-text" class="w-3.5 h-3.5 text-purple-500"></i>
-          <span>PDF REPORT</span>
-        </button>
+        <button type="button" id="json-btn" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-500 text-slate-700 dark:text-slate-200 transition">JSON</button>
+        <button type="button" id="pdf-btn" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-500 text-slate-700 dark:text-slate-200 transition">PDF REPORT</button>
       </div>
-
     </div>
-
-    <!-- QUICK PRESETS BAR -->
     <div class="max-w-[1700px] mx-auto mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/60 flex items-center gap-2 overflow-x-auto text-[11px] font-mono text-slate-500">
       <span class="font-bold text-slate-700 dark:text-slate-300">PRESETS:</span>
-      <button onclick="setDomain('solana.com')" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Solana (Crypto)</button>
-      <button onclick="setDomain('paystack.com')" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Paystack (Fintech)</button>
-      <button onclick="setDomain('flutterwave.com')" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Flutterwave (Fintech)</button>
-      <button onclick="setDomain('moniepoint.com')" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Moniepoint (Banking)</button>
-      <button onclick="setDomain('github.com')" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">GitHub (Dev Infra)</button>
+      <button type="button" data-preset="solana.com" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Solana</button>
+      <button type="button" data-preset="paystack.com" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Paystack</button>
+      <button type="button" data-preset="flutterwave.com" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Flutterwave</button>
+      <button type="button" data-preset="moniepoint.com" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">Moniepoint</button>
+      <button type="button" data-preset="github.com" class="px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700/80 hover:border-blue-500 hover:text-blue-600 transition">GitHub</button>
+      <span class="ml-auto text-slate-400">Enter runs · button stops</span>
     </div>
   </header>
-
-  <!-- PRINT REPORT HEADER -->
   <div class="hidden print:block p-8 border-b-2 border-slate-900">
     <div class="flex justify-between items-center">
       <div>
         <h1 class="text-3xl font-black">NUEX SECURITY AUDIT REPORT</h1>
-        <p class="text-sm font-mono text-slate-600">Pan-African Cyber Defense & Infrastructure Verification</p>
+        <p class="text-sm font-mono text-slate-600">Public DNS, certificate, and registration signals. Not a penetration test or a certification.</p>
       </div>
       <div class="text-right font-mono text-xs">
-        <p>Target: <strong id="print-domain" class="text-base text-blue-600">---</strong></p>
+        <p>Target: <strong id="print-domain" class="text-base">---</strong></p>
         <p>Generated: <span id="print-date">---</span></p>
       </div>
     </div>
   </div>
-
-  <!-- MAIN SOC DASHBOARD -->
   <main class="flex-1 max-w-[1700px] w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
-
-    <!-- WEBSITE AUTO-DESCRIPTION BANNER -->
-    <section class="bg-gradient-to-r from-blue-900/20 via-slate-900/40 to-purple-900/20 border border-blue-500/30 rounded-2xl p-4 shadow-sm backdrop-blur-sm print-border">
+    <section class="screen-dark bg-[#0B1220] text-slate-200 border border-blue-500/30 rounded-2xl p-4 shadow-sm print-border">
       <div class="flex items-start gap-3">
-        <div class="p-2.5 rounded-xl bg-blue-600 text-white shrink-0 mt-0.5">
-          <i data-lucide="info" class="w-5 h-5"></i>
-        </div>
-        <div class="flex-1">
+        <div class="p-2.5 rounded-xl bg-blue-600 text-white shrink-0"><i data-lucide="info" class="w-5 h-5"></i></div>
+        <div class="flex-1 min-w-0">
           <div class="flex items-center justify-between gap-2 flex-wrap">
-            <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-blue-400">Target Overview & Web Intelligence</h2>
+            <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-blue-400">Target overview</h2>
             <span id="target-url-badge" class="text-[10px] font-mono text-slate-400">solana.com</span>
           </div>
-          <p id="target-description" class="text-xs font-mono text-slate-300 mt-1 leading-relaxed">
-            Run an audit to query Microlink structured metadata and generate an explicit plain-English summary for this domain.
-          </p>
+          <p id="target-description" class="text-xs font-mono text-slate-300 mt-1 leading-relaxed">Run an audit to pull public metadata, DNS, certificate logs, and registration data for this domain.</p>
         </div>
       </div>
-    </section>
-
-    <!-- TOP KPI EXECUTIVE SCORECARDS -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-
-      <!-- Overall Security Score -->
-      <div class="kpi-card bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm print-border">
-        <div class="flex justify-between items-start">
-          <div>
-            <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block mb-1">Security Score</span>
-            <div class="flex items-baseline gap-2">
-              <span id="score-val" class="text-3xl font-black text-blue-600 dark:text-blue-400">—</span>
-              <span class="text-xs font-mono text-slate-400">/ 100</span>
-            </div>
-          </div>
-          <div class="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
-            <i data-lucide="shield-check" class="w-6 h-6"></i>
-          </div>
-        </div>
-        <span id="score-status" class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 block">Awaiting audit execution...</span>
-      </div>
-
-      <!-- Threat Exposure Level -->
-      <div class="kpi-card bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm print-border">
-        <div class="flex justify-between items-start">
-          <div>
-            <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block mb-1">Threat Exposure</span>
-            <div class="text-2xl font-black font-mono text-slate-900 dark:text-white" id="risk-val">—</div>
-          </div>
-          <div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-          </div>
-        </div>
-        <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 block" id="risk-sub">Scan domain to calculate risk</span>
-      </div>
-
-      <!-- Threat Intel & IP Reputation KPI -->
-      <div class="kpi-card bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm print-border">
-        <div class="flex justify-between items-start">
-          <div>
-            <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block mb-1">Threat Intel & IP Rep</span>
-            <div class="text-xl font-black font-mono text-slate-900 dark:text-white" id="threat-intel-val">—</div>
-          </div>
-          <div class="p-2.5 rounded-xl bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400">
-            <i data-lucide="server" class="w-6 h-6"></i>
-          </div>
-        </div>
-        <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 block" id="threat-intel-sub">ASN & Hosting Reputation</span>
-      </div>
-
-      <!-- Email Auth Compliance -->
-      <div class="kpi-card bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm print-border">
-        <div class="flex justify-between items-start">
-          <div>
-            <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block mb-1">Email Authentication</span>
-            <div class="text-2xl font-black font-mono text-slate-900 dark:text-white" id="email-compliance-val">— / 2</div>
-          </div>
-          <div class="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
-            <i data-lucide="mail-check" class="w-6 h-6"></i>
-          </div>
-        </div>
-        <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 block">SPF & DMARC Validation</span>
-      </div>
-
-      <!-- Custodial Trust Score -->
-      <div class="kpi-card bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm print-border">
-        <div class="flex justify-between items-start">
-          <div>
-            <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider block mb-1">Custodial Trust</span>
-            <div class="flex items-baseline gap-2">
-              <span id="trust-score-val" class="text-3xl font-black text-slate-900 dark:text-white">—</span>
-              <span class="text-xs font-mono text-slate-400">/ 100</span>
-            </div>
-          </div>
-          <div class="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400">
-            <i data-lucide="banknote" class="w-6 h-6"></i>
-          </div>
-        </div>
-        <span id="trust-score-status" class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-2 block">Would you trust this domain with money?</span>
-      </div>
-
-    </section>
-
-    <!-- HISTORICAL AUDIT DELTA PANEL -->
-    <section id="delta-panel" class="hidden bg-slate-900 border border-purple-500/40 rounded-2xl p-4 font-mono text-xs shadow-md">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
-        <div class="flex items-center gap-2 text-purple-400 font-bold">
-          <i data-lucide="history" class="w-4 h-4"></i>
-          <span>HISTORICAL AUDIT DELTA (SCAN VS LAST HISTORICAL SCAN)</span>
-        </div>
-        <span id="delta-time" class="text-[10px] text-slate-500">---</span>
-      </div>
-      <div id="delta-content" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-300">
-        <!-- Dynamic Diff Content -->
-      </div>
-    </section>
-
-    <!-- DENSE MULTI-COLUMN SOC COMMAND GRID -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-      <!-- LEFT COLUMN (7 COLS): TABLES & REMEDIATION PLAYBOOK -->
-      <div class="lg:col-span-7 flex flex-col gap-6">
-
-        <!-- 01. DNS INFRASTRUCTURE MATRIX -->
-        <div class="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm print-border">
-          <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800 flex-wrap gap-2">
-            <div class="flex items-center gap-2">
-              <i data-lucide="database" class="w-4 h-4 text-blue-600 dark:text-cyan-400"></i>
-              <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">01 · DNS Infrastructure Ledger</h3>
-              <span id="dns-count-val" class="text-[10px] font-mono bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-300 px-2 py-0.5 rounded font-bold">0 Records</span>
-            </div>
-            
-            <div id="filter-chips" class="flex items-center gap-1 text-[11px] font-mono no-print">
-              <button data-type="ALL" data-active="true" onclick="filterDnsType('ALL', this)" class="chip-btn border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-slate-600 dark:text-slate-300">ALL</button>
-              <button data-type="A" onclick="filterDnsType('A', this)" class="chip-btn border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-slate-600 dark:text-slate-300">A</button>
-              <button data-type="AAAA" onclick="filterDnsType('AAAA', this)" class="chip-btn border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-slate-600 dark:text-slate-300">AAAA</button>
-              <button data-type="MX" onclick="filterDnsType('MX', this)" class="chip-btn border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-slate-600 dark:text-slate-300">MX</button>
-              <button data-type="TXT" onclick="filterDnsType('TXT', this)" class="chip-btn border border-slate-200 dark:border-slate-700 rounded px-2 py-0.5 text-slate-600 dark:text-slate-300">TXT</button>
-            </div>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left font-mono text-xs">
-              <thead>
-                <tr class="text-[10px] text-slate-400 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-                  <th class="pl-5 py-2 font-bold cursor-pointer" onclick="sortDnsBy('type')">TYPE ⇅</th>
-                  <th class="py-2 font-bold">RESOLVED VALUE</th>
-                  <th class="py-2 font-bold cursor-pointer" onclick="sortDnsBy('ttl')">TTL ⇅</th>
-                  <th class="pr-5 py-2 font-bold text-right">VERIFICATION</th>
-                </tr>
-              </thead>
-              <tbody id="dns-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/60 text-slate-800 dark:text-slate-200">
-                <tr>
-                  <td colspan="4" class="text-center text-slate-400 py-8 text-xs font-mono">Run an audit to query DoH DNS infrastructure.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- 02. CRT.SH SUBDOMAIN DISCOVERY -->
-        <div class="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm print-border">
-          <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800">
-            <div class="flex items-center gap-2">
-              <i data-lucide="globe-2" class="w-4 h-4 text-purple-600 dark:text-purple-400"></i>
-              <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">02 · Passive Subdomain Discovery (CRT.sh)</h3>
-            </div>
-            <span id="subdomain-count" class="text-[10px] font-mono bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded font-bold">0 Discovered</span>
-          </div>
-
-          <div class="p-4 max-h-56 overflow-y-auto font-mono text-xs">
-            <ul id="subdomain-list" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-slate-600 dark:text-slate-300">
-              <li class="col-span-full text-center text-slate-400 py-4">Awaiting target domain query...</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- 03. EMAIL & HEADER SECURITY CHECKLIST -->
-        <div class="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm print-border">
-          <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800">
-            <div class="flex items-center gap-2">
-              <i data-lucide="shield-alert" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
-              <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">03 · Email Auth & Security Header Checklist</h3>
-            </div>
-            <span class="text-[10px] font-mono text-slate-400">Automated Audit</span>
-          </div>
-
-          <div class="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono text-xs">
-            <div class="px-5 py-3 flex items-center justify-between">
-              <div>
-                <div class="font-bold text-slate-900 dark:text-white">SPF (Sender Policy Framework)</div>
-                <div class="text-[11px] text-slate-500">Specifies authorized mail servers for domain.</div>
-              </div>
-              <span id="spf-badge" class="px-2.5 py-1 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">PENDING</span>
-            </div>
-            <div class="px-5 py-3 flex items-center justify-between">
-              <div>
-                <div class="font-bold text-slate-900 dark:text-white">DMARC Policy</div>
-                <div class="text-[11px] text-slate-500">Dictates action on failed SPF/DKIM verification.</div>
-              </div>
-              <span id="dmarc-badge" class="px-2.5 py-1 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">PENDING</span>
-            </div>
-            <div class="px-5 py-3 flex items-center justify-between">
-              <div>
-                <div class="font-bold text-slate-900 dark:text-white">Strict-Transport-Security (HSTS)</div>
-                <div class="text-[11px] text-slate-500">Enforces HTTPS encryption on browsers.</div>
-              </div>
-              <span id="hsts-badge" class="px-2.5 py-1 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">PENDING</span>
-            </div>
-            <div class="px-5 py-3 flex items-center justify-between">
-              <div>
-                <div class="font-bold text-slate-900 dark:text-white">Content-Security-Policy (CSP)</div>
-                <div class="text-[11px] text-slate-500">Mitigates Cross-Site Scripting (XSS) vectors.</div>
-              </div>
-              <span id="csp-badge" class="px-2.5 py-1 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">PENDING</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 04. PLAIN-ENGLISH REMEDIATION PLAYBOOK -->
-        <div class="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm print-border">
-          <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
-            <i data-lucide="wrench" class="w-4 h-4 text-amber-500"></i>
-            <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">04 · Plain-English Fix Recommendations</h3>
-          </div>
-
-          <div id="remediation-container" class="space-y-4 text-xs font-mono">
-            <p class="text-slate-400 italic">Audit results will automatically produce tailored step-by-step copy/paste DNS record fixes here.</p>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- RIGHT COLUMN (5 COLS): CONNECTIVITY PANEL & REAL-TIME LOG DRAWER -->
-      <div class="lg:col-span-5 flex flex-col gap-6">
-
-        <!-- THREAT INTEL & HOSTING INFRASTRUCTURE -->
-        <div class="bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm print-border">
-          <div class="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-            <div class="flex items-center gap-2">
-              <i data-lucide="shield" class="w-4 h-4 text-cyan-500"></i>
-              <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">05 · Threat Intel & Host Breakdown</h3>
-            </div>
-            <span id="threat-status-tag" class="text-[10px] font-mono text-slate-400 font-bold">PENDING</span>
-          </div>
-
-          <div class="space-y-3 font-mono text-xs">
-            <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-              <span class="text-slate-500">Primary IP Address:</span>
-              <span id="intel-ip-val" class="font-bold text-slate-900 dark:text-white">—</span>
-            </div>
-            <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-              <span class="text-slate-500">ASN / Provider:</span>
-              <span id="intel-asn-val" class="font-bold text-slate-900 dark:text-white">—</span>
-            </div>
-            <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-              <span class="text-slate-500">Country Location:</span>
-              <span id="intel-country-val" class="font-bold text-slate-900 dark:text-white">—</span>
-            </div>
-            <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-              <span class="text-slate-500">Proxy/Cloudflare Shield:</span>
-              <span id="intel-proxy-val" class="font-bold text-slate-900 dark:text-white">—</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- REAL-TIME SOC CONSOLE STREAM & LOG DRAWER -->
-        <div class="no-print bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex-1 flex flex-col min-h-[380px] shadow-sm">
-          <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-200 dark:border-slate-800">
-            <div class="flex items-center gap-2">
-              <i data-lucide="terminal" class="w-4 h-4 text-purple-600 dark:text-purple-400"></i>
-              <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">06 · SOC Telemetry Terminal</h3>
-            </div>
-            <span class="text-[10px] font-mono text-slate-400">Live Stream</span>
-          </div>
-
-          <div id="soc-logs" class="flex-1 overflow-y-auto font-mono text-[11px] p-3 space-y-2 bg-slate-900 text-slate-300 rounded-xl border border-slate-800 min-h-[260px]">
-            <div class="text-cyan-400">[SYSTEM] NUEX Cyber Defense Engine Online (Microlink Metadata Edition).</div>
-            <div class="text-slate-500">[READY] Enter a target domain and click 'RUN AUDIT'.</div>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- TRUST & COMPLIANCE LAYER -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-      <!-- 07. NDPR / ISO 27001 COMPLIANCE READINESS -->
-      <div class="lg:col-span-7 bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm print-border">
-        <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-200 dark:border-slate-800 flex-wrap gap-2">
-          <div class="flex items-center gap-2">
-            <i data-lucide="clipboard-check" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
-            <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">07 · NDPR / ISO 27001 Compliance Readiness</h3>
-          </div>
-          <span id="compliance-pct" class="text-[10px] font-mono bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 px-2 py-0.5 rounded font-bold">— % READY</span>
-        </div>
-
-        <div id="compliance-container" class="space-y-2 text-xs font-mono">
-          <p class="text-slate-400 italic">Run an audit to map existing signals against real NDPR &amp; ISO 27001 controls.</p>
-        </div>
-      </div>
-
-      <!-- 08. DOMAIN TRUST INTELLIGENCE (RDAP) -->
-      <div class="lg:col-span-5 bg-white dark:bg-[#0E1726] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm print-border">
-        <div class="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-slate-800 pb-3">
-          <div class="flex items-center gap-2">
-            <i data-lucide="fingerprint" class="w-4 h-4 text-rose-600 dark:text-rose-400"></i>
-            <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-900 dark:text-white">08 · Domain Trust Intelligence</h3>
-          </div>
-          <span id="rdap-status-tag" class="text-[10px] font-mono text-slate-400 font-bold">PENDING</span>
-        </div>
-
-        <div class="space-y-3 font-mono text-xs">
-          <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-            <span class="text-slate-500">Domain Registered:</span>
-            <span id="rdap-reg-date-val" class="font-bold text-slate-900 dark:text-white">—</span>
-          </div>
-          <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-            <span class="text-slate-500">Domain Age:</span>
-            <span id="rdap-age-val" class="font-bold text-slate-900 dark:text-white">—</span>
-          </div>
-          <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
-            <span class="text-slate-500">Age Risk Flag:</span>
-            <span id="rdap-flag-val" class="font-bold text-slate-900 dark:text-white">—</span>
-          </div>
-
-          <div id="trust-factors-container" class="pt-3 border-t border-slate-100 dark:border-slate-800/60 space-y-1.5">
-            <p class="text-slate-400 italic">Trust factor breakdown will appear here after audit.</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="no-print text-center text-xs font-mono text-slate-400 pt-4 pb-6">
-      NUEX PAN-AFRICAN CYBER DEFENSE PLATFORM — LAGOS, NIGERIA
-    </footer>
-
-  </main>
-
-  <!-- TOAST NOTIFICATION -->
-  <div id="toast" class="no-print fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-mono px-4 py-2 rounded-xl shadow-2xl opacity-0 transition-all pointer-events-none translate-y-2 z-50">
-    Notification
-  </div>
-
-  <!-- CORE JAVASCRIPT ENGINE -->
-  <script>
-    lucide.createIcons();
-
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.documentElement.classList.add('dark');
-    }
-
-    function toggleTheme() {
-      document.documentElement.classList.toggle('dark');
-      const isDark = document.documentElement.classList.contains('dark');
-      const themeText = document.getElementById('theme-text');
-      if (themeText) themeText.innerText = isDark ? 'DARK' : 'LIGHT';
-    }
-
-    setInterval(() => {
-      const d = new Date();
-      const clockEl = document.getElementById('clock-display');
-      if (clockEl) clockEl.innerText = d.toUTCString().split(' ')[4] + ' UTC';
-    }, 1000);
-
-    function safeSetText(id, val) {
-      const el = document.getElementById(id);
-      if (el) el.innerText = val;
-    }
-
-    function safeSetHTML(id, html) {
-      const el = document.getElementById(id);
-      if (el) el.innerHTML = html;
-    }
-
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      if (!t) return;
-      t.innerText = msg;
-      t.classList.remove('opacity-0', 'translate-y-2');
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => t.classList.add('opacity-0', 'translate-y-2'), 2200);
-    }
-
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => showToast(`Copied: "${text}"`));
-    }
-
-    function setDomain(domain) {
-      const input = document.getElementById('target-domain');
-      if (input) input.value = domain;
-      executeAudit();
-    }
-
-    function sanitizeDomain(raw) {
-      let d = raw.trim().toLowerCase();
-      d = d.replace(/^[a-z][a-z0-9+.-]*:\/\//, '');
-      d = d.replace(/^mailto:/, '');
-      d = d.split('#')[0];
-      d = d.split('?')[0];
-      d = d.split('/')[0];
-      d = d.split(':')[0];
-      d = d.replace(/^www\./, '');
-      d = d.replace(/\.+$/, '');
-      return d;
-    }
-
-    function isValidDomain(d) {
-      if (!d || d.length > 253) return false;
-      return /^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i.test(d);
-    }
-
-    function appendLog(msg, type = 'info') {
-      const logs = document.getElementById('soc-logs');
-      if (!logs) return;
-      const entry = document.createElement('div');
-      
-      let colorClass = 'text-slate-300';
-      if (type === 'success') colorClass = 'text-emerald-400';
-      if (type === 'action') colorClass = 'text-cyan-400';
-      if (type === 'warn') colorClass = 'text-amber-400';
-      if (type === 'error') colorClass = 'text-rose-400';
-
-      const time = new Date().toLocaleTimeString();
-      entry.className = `${colorClass} font-mono`;
-      entry.innerText = `[${time}] ${msg}`;
-      logs.prepend(entry);
-    }
-
-    // ZERO-ERROR HIGH-RELIABILITY MICROLINK METADATA GENERATOR WITH SMART FALLBACK
-    async function fetchWebsiteDescription(domain) {
-      const descEl = document.getElementById('target-description');
-      const badgeEl = document.getElementById('target-url-badge');
-      if (badgeEl) badgeEl.innerText = domain;
-      if (descEl) descEl.innerText = "Querying Microlink intelligence engine for metadata...";
-
-      try {
-        const res = await fetch(`https://api.microlink.io?url=${encodeURIComponent('https://' + domain)}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-
-        if (data.status === 'success' && data.data && data.data.description && data.data.description.trim().length > 0) {
-          if (descEl) descEl.innerText = data.data.description.trim();
-          appendLog(`[METADATA] Microlink metadata resolved for ${domain}`, 'success');
-          return;
-        }
-
-        if (data.status === 'success' && data.data && data.data.title) {
-          if (descEl) descEl.innerText = `Official web portal for "${data.data.title.trim()}". Active domain (${domain}) verified operational.`;
-          appendLog(`[METADATA] Resolved title metadata for ${domain}`, 'success');
-          return;
-        }
-
-        throw new Error("No metadata tags provided by target host");
-      } catch (err) {
-        const parts = domain.split('.');
-        const brandName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-        if (descEl) descEl.innerText = `Active enterprise domain (${domain}) representing ${brandName}. Web server is active; OpenGraph and metadata tags are restricted or unpopulated by host configuration.`;
-        appendLog(`[METADATA] Applied safe failover description for ${domain}`, 'warn');
-      }
-    }
-
-    // THREAT INTEL & IP REPUTATION MATRIX
-    async function checkThreatIntel(ip) {
-      const tagEl = document.getElementById('threat-status-tag');
-      const proxyEl = document.getElementById('intel-proxy-val');
-      const kpiVal = document.getElementById('threat-intel-val');
-
-      if (!ip) {
-        if (tagEl) tagEl.innerText = 'NO IP';
-        safeSetText('intel-ip-val', 'N/A');
-        safeSetText('intel-asn-val', 'N/A');
-        safeSetText('intel-country-val', 'N/A');
-        safeSetText('intel-proxy-val', 'N/A');
-        safeSetText('threat-intel-val', 'UNKNOWN');
-        return;
-      }
-
-      try {
-        const res = await fetch(`https://ipapi.co/${ip}/json/`);
-        if (!res.ok) throw new Error('Threat IP API unreachable');
-        const data = await res.json();
-
-        safeSetText('intel-ip-val', ip);
-        safeSetText('intel-asn-val', data.org || data.asn || 'Cloud Provider');
-        safeSetText('intel-country-val', `${data.country_name || 'Global'} (${data.country_code || 'XX'})`);
-        
-        const isCloudflare = (data.org && data.org.includes('Cloudflare')) || (data.asn && data.asn.includes('13335'));
-        if (proxyEl) {
-          proxyEl.innerText = isCloudflare ? 'Cloudflare Proxy (Shielded)' : 'Direct Origin IP';
-          proxyEl.className = isCloudflare ? 'font-bold text-emerald-400' : 'font-bold text-amber-400';
-        }
-
-        if (tagEl) {
-          tagEl.innerText = 'CLEAN';
-          tagEl.className = 'text-[10px] font-mono text-emerald-400 font-bold';
-        }
-        if (kpiVal) {
-          kpiVal.innerText = isCloudflare ? 'LOW RISK (CDN)' : 'MODERATE (DIRECT)';
-          kpiVal.className = isCloudflare ? 'text-xl font-black text-emerald-400' : 'text-xl font-black text-amber-400';
-        }
-        
-        appendLog(`[INTEL] Resolved IP ${ip} to ${data.org || 'Provider'} (${data.country_code})`, 'success');
-      } catch (e) {
-        safeSetText('intel-ip-val', ip);
-        safeSetText('intel-asn-val', 'Enterprise Infrastructure');
-        safeSetText('intel-country-val', 'Global / Anycast');
-        safeSetText('intel-proxy-val', 'Protected / Proxied');
-        if (tagEl) tagEl.innerText = 'RESOLVED';
-        safeSetText('threat-intel-val', 'LOW RISK');
-      }
-    }
-
-    // HISTORICAL AUDIT DELTA & DIFFING
-    function calculateAuditDelta(domain, currentScore, currentRecords) {
-      const deltaPanel = document.getElementById('delta-panel');
-      const deltaContent = document.getElementById('delta-content');
-      const deltaTime = document.getElementById('delta-time');
-      const storageKey = `nuex_history_${domain}`;
-
-      const previousScanRaw = localStorage.getItem(storageKey);
-      const now = new Date();
-
-      if (!previousScanRaw) {
-        if (deltaPanel) deltaPanel.classList.add('hidden');
-        localStorage.setItem(storageKey, JSON.stringify({
-          score: currentScore,
-          recordsCount: currentRecords.length,
-          timestamp: now.toISOString()
-        }));
-        return;
-      }
-
-      const prev = JSON.parse(previousScanRaw);
-      const scoreDiff = currentScore - prev.score;
-      const recDiff = currentRecords.length - prev.recordsCount;
-
-      let scoreDiffBadge = scoreDiff > 0 
-        ? `<span class="text-emerald-400 font-bold">+${scoreDiff} PTS UPGRADE</span>`
-        : scoreDiff < 0 
-        ? `<span class="text-rose-400 font-bold">${scoreDiff} PTS DROPPED</span>`
-        : `<span class="text-slate-400">NO SCORE CHANGE</span>`;
-
-      let recDiffBadge = recDiff > 0 
-        ? `<span class="text-cyan-400 font-bold">+${recDiff} NEW RECORDS</span>`
-        : recDiff < 0 
-        ? `<span class="text-amber-400 font-bold">${recDiff} RECORDS REMOVED</span>`
-        : `<span class="text-slate-400">UNCHANGED</span>`;
-
-      if (deltaTime) deltaTime.innerText = `PREVIOUS SCAN: ${new Date(prev.timestamp).toLocaleDateString()} ${new Date(prev.timestamp).toLocaleTimeString()}`;
-
-      if (deltaContent) {
-        deltaContent.innerHTML = `
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-            <span class="text-slate-500 block text-[10px]">SECURITY SCORE DELTA</span>
-            <div class="text-sm mt-1">${scoreDiffBadge}</div>
-            <span class="text-[10px] text-slate-400 block mt-1">Prev: ${prev.score} → Current: ${currentScore}</span>
-          </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-            <span class="text-slate-500 block text-[10px]">DNS LEDGER DRIFT</span>
-            <div class="text-sm mt-1">${recDiffBadge}</div>
-            <span class="text-[10px] text-slate-400 block mt-1">Prev Count: ${prev.recordsCount} → Current: ${currentRecords.length}</span>
-          </div>
-          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-            <span class="text-slate-500 block text-[10px]">INTEGRITY STATUS</span>
-            <div class="text-sm mt-1 text-emerald-400 font-bold">${scoreDiff >= 0 ? 'STABLE OR HARDENED' : 'ATTENTION REQUIRED'}</div>
-            <span class="text-[10px] text-slate-400 block mt-1">Delta comparison computed automatically</span>
-          </div>
-        `;
-      }
-
-      if (deltaPanel) deltaPanel.classList.remove('hidden');
-
-      localStorage.setItem(storageKey, JSON.stringify({
-        score: currentScore,
-        recordsCount: currentRecords.length,
-        timestamp: now.toISOString()
-      }));
-    }
-
-    // DoH Resolver API
-    async function dohQuery(name, type) {
-      const url = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=${type}`;
-      const res = await fetch(url, { headers: { 'Accept': 'application/dns-json' } });
-      return res.json();
-    }
-
-    async function fetchSubdomains(domain) {
-      try {
-        const res = await fetch(`https://crt.sh/?q=%25.${encodeURIComponent(domain)}&output=json`);
-        if (!res.ok) return { ok: false, reason: `crt.sh HTTP ${res.status}` };
-        const data = await res.json();
-        const subdomains = [...new Set(data.map(item => item.name_value.toLowerCase()).flatMap(v => v.split('\n')))];
-        return { ok: true, subdomains: subdomains.slice(0, 20) };
-      } catch (e) {
-        return { ok: false, reason: 'crt.sh rate-limited or restricted' };
-      }
-    }
-
-    async function checkHttpsAndHeaders(domain) {
-      const result = { reachable: null, hsts: 'unknown', csp: 'unknown' };
-      try {
-        const res = await fetch(`https://${domain}`, { method: 'GET', mode: 'cors', redirect: 'follow' });
-        result.reachable = true;
-        const hstsHeader = res.headers.get('strict-transport-security');
-        const cspHeader = res.headers.get('content-security-policy');
-        result.hsts = hstsHeader ? 'present' : 'unreadable';
-        result.csp = cspHeader ? 'present' : 'unreadable';
-      } catch (e) {
-        result.reachable = 'unverifiable';
-      }
-      return result;
-    }
-
-    async function fetchDomainAge(domain) {
-      try {
-        const res = await fetch(`https://rdap.org/domain/${encodeURIComponent(domain)}`, {
-          headers: { 'Accept': 'application/rdap+json' }
-        });
-        if (!res.ok) return { ok: false, reason: `RDAP HTTP ${res.status}` };
-        const data = await res.json();
-        const regEvent = (data.events || []).find(e => e.eventAction === 'registration');
-        if (!regEvent || !regEvent.eventDate) return { ok: false, reason: 'No registration event in RDAP' };
-        const regDate = new Date(regEvent.eventDate);
-        const ageDays = Math.floor((Date.now() - regDate.getTime()) / 86400000);
-        return { ok: true, ageDays, regDate };
-      } catch (e) {
-        return { ok: false, reason: 'RDAP CORS restricted' };
-      }
-    }
-
-    function computeTrustScore(spfRecord, dmarcRecord, httpsResult, ageResult) {
-      let score = 0;
-      const factors = [];
-
-      const httpsOk = httpsResult.reachable === true;
-      score += httpsOk ? 25 : 0;
-      factors.push({ label: 'HTTPS Reachable', pass: httpsOk, note: httpsOk ? 'Confirmed' : 'Unverifiable (CORS)' });
-
-      score += spfRecord ? 20 : 0;
-      factors.push({ label: 'Anti-Spoofing (SPF)', pass: !!spfRecord, note: spfRecord ? 'Configured' : 'Missing' });
-
-      score += dmarcRecord ? 20 : 0;
-      factors.push({ label: 'Anti-Phishing (DMARC)', pass: !!dmarcRecord, note: dmarcRecord ? 'Configured' : 'Missing' });
-
-      const hstsOk = httpsResult.hsts === 'present';
-      score += hstsOk ? 10 : (httpsResult.hsts === 'unreadable' ? 5 : 0);
-      factors.push({ label: 'Forced Encryption (HSTS)', pass: hstsOk ? true : null, note: hstsOk ? 'Confirmed' : 'Unverifiable' });
-
-      const cspOk = httpsResult.csp === 'present';
-      score += cspOk ? 10 : (httpsResult.csp === 'unreadable' ? 5 : 0);
-      factors.push({ label: 'Web Hardening (CSP)', pass: cspOk ? true : null, note: cspOk ? 'Confirmed' : 'Unverifiable' });
-
-      if (ageResult.ok) {
-        const years = ageResult.ageDays / 365;
-        const ageScore = years >= 2 ? 15 : years >= 1 ? 10 : years >= 0.25 ? 4 : 0;
-        score += ageScore;
-        factors.push({
-          label: 'Domain Maturity',
-          pass: years >= 1,
-          note: years < 0.25 ? `⚠ Registered ${ageResult.ageDays} days ago` : `${years.toFixed(1)} years old`
-        });
-      } else {
-        score += 7;
-        factors.push({ label: 'Domain Maturity', pass: null, note: `Unable to verify — ${ageResult.reason}` });
-      }
-
-      score = Math.min(100, Math.round(score));
-      let verdict, colorClass;
-      if (score >= 75) { verdict = 'HIGH TRUST'; colorClass = 'text-emerald-600 dark:text-emerald-400'; }
-      else if (score >= 50) { verdict = 'MODERATE TRUST'; colorClass = 'text-amber-500'; }
-      else { verdict = 'LOW TRUST — VERIFY BEFORE SENDING MONEY'; colorClass = 'text-rose-600'; }
-
-      return { score, verdict, colorClass, factors };
-    }
-
-    function renderCompliance(spfRecord, dmarcRecord, httpsResult) {
-      const httpsOk = httpsResult.reachable === true;
-
-      const controls = [
-        { name: 'Transport Layer Security', ref: 'NDPR Art. 2.6(1)(f) · ISO 27001 A.8.24', state: httpsOk ? true : null },
-        { name: 'Email Anti-Spoofing (SPF)', ref: 'NDPR Art. 2.6 · ISO 27001 A.5.14', state: !!spfRecord },
-        { name: 'Domain Message Authentication (DMARC)', ref: 'NDPR Art. 2.6 · ISO 27001 A.5.14', state: !!dmarcRecord },
-        { name: 'Forced HTTPS (HSTS)', ref: 'ISO 27001 A.8.24', state: httpsResult.hsts === 'present' ? true : null },
-        { name: 'XSS Hardening (CSP)', ref: 'ISO 27001 A.8.26', state: httpsResult.csp === 'present' ? true : null },
-      ];
-
-      const verifiable = controls.filter(c => c.state !== null);
-      const passed = verifiable.filter(c => c.state === true).length;
-      const pct = verifiable.length ? Math.round((passed / verifiable.length) * 100) : 0;
-
-      safeSetText('compliance-pct', `${pct}% READY`);
-
-      const container = document.getElementById('compliance-container');
-      if (container) {
-        container.innerHTML = controls.map(c => {
-          const badge = c.state === true
-            ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400">✓ PASS</span>`
-            : c.state === false
-            ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400">✕ FAIL</span>`
-            : `<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">⚠ UNABLE TO VERIFY</span>`;
-          return `
-            <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
-              <div>
-                <div class="font-bold text-slate-900 dark:text-white">${c.name}</div>
-                <div class="text-[10px] text-slate-400">${c.ref}</div>
-              </div>
-              ${badge}
-            </div>
-          `;
-        }).join('');
-      }
-    }
-
-    function setBadge(elId, state, presentText = '✓ PRESENT', absentText = '✕ MISSING', unknownText = '⚠ UNABLE TO VERIFY') {
-      const el = document.getElementById(elId);
-      if (!el) return;
-      if (state === true) {
-        el.className = 'px-2.5 py-1 rounded text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400';
-        el.innerText = presentText;
-      } else if (state === false) {
-        el.className = 'px-2.5 py-1 rounded text-[10px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-400';
-        el.innerText = absentText;
-      } else {
-        el.className = 'px-2.5 py-1 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400';
-        el.innerText = unknownText;
-      }
-    }
-
-    let currentDnsRecords = [];
-    let activeDnsFilter = 'ALL';
-    let dnsSortState = { key: null, dir: 1 };
-
-    function renderDnsTable() {
-      const tbody = document.getElementById('dns-table-body');
-      if (!tbody) return;
-      let rows = activeDnsFilter === 'ALL' ? currentDnsRecords : currentDnsRecords.filter(r => r.type === activeDnsFilter);
-
-      if (dnsSortState.key) {
-        rows = [...rows].sort((a, b) => {
-          let av = a[dnsSortState.key], bv = b[dnsSortState.key];
-          if (dnsSortState.key === 'ttl') { av = Number(av); bv = Number(bv); }
-          if (av < bv) return -1 * dnsSortState.dir;
-          if (av > bv) return 1 * dnsSortState.dir;
-          return 0;
-        });
-      }
-
-      if (rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-slate-400 py-6">No records found for filter.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = rows.map(r => `
-        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition">
-          <td class="pl-5 py-3 font-bold text-blue-600 dark:text-cyan-400">${r.type}</td>
-          <td class="font-mono text-slate-900 dark:text-slate-100 flex items-center justify-between pr-4">
-            <span class="break-all">${r.value}</span>
-            <button onclick="copyToClipboard('${r.value.replace(/'/g, "\\'")}')" class="no-print ml-2 text-slate-400 hover:text-blue-500" title="Copy">
-              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-            </button>
-          </td>
-          <td class="text-slate-500">${r.ttl}s</td>
-          <td class="pr-5 text-right">
-            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-              ✓ VERIFIED
-            </span>
-          </td>
-        </tr>
-      `).join('');
-
-      lucide.createIcons();
-    }
-
-    function filterDnsType(type, btn) {
-      activeDnsFilter = type;
-      document.querySelectorAll('#filter-chips .chip-btn').forEach(c => c.setAttribute('data-active', 'false'));
-      btn.setAttribute('data-active', 'true');
-      renderDnsTable();
-    }
-
-    function sortDnsBy(key) {
-      dnsSortState.dir = (dnsSortState.key === key) ? dnsSortState.dir * -1 : 1;
-      dnsSortState.key = key;
-      renderDnsTable();
-    }
-
-    // MAIN AUDIT EXECUTION ENGINE
-    async function executeAudit() {
-      const inputEl = document.getElementById('target-domain');
-      if (!inputEl) return;
-      
-      const rawInput = inputEl.value;
-      const domain = sanitizeDomain(rawInput);
-      const btn = document.getElementById('scan-btn');
-
-      if (!isValidDomain(domain)) {
-        showToast(domain ? `"${domain}" doesn't look like a valid domain` : "Please enter a domain!");
-        return;
-      }
-
-      inputEl.value = domain;
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = `<span>AUDITING...</span>`;
-      }
-      appendLog(`[AUDIT] Initiating investigation for ${domain}`, 'action');
-
-      safeSetText('print-domain', domain);
-      safeSetText('print-date', new Date().toLocaleString());
-
-      // Trigger Microlink Web Description Fetch Parallel
-      fetchWebsiteDescription(domain);
-
-      try {
-        const [aRes, aaaaRes, mxRes, txtRes, dmarcRes] = await Promise.all([
-          dohQuery(domain, 'A'),
-          dohQuery(domain, 'AAAA'),
-          dohQuery(domain, 'MX'),
-          dohQuery(domain, 'TXT'),
-          dohQuery(`_dmarc.${domain}`, 'TXT')
-        ]);
-
-        appendLog(`[DoH] DNS Query responses received for ${domain}`, 'success');
-
-        currentDnsRecords = [];
-        (aRes.Answer || []).filter(a => a.type === 1).forEach(a => currentDnsRecords.push({ type: 'A', value: a.data, ttl: a.TTL }));
-        (aaaaRes.Answer || []).filter(a => a.type === 28).forEach(a => currentDnsRecords.push({ type: 'AAAA', value: a.data, ttl: a.TTL }));
-        (mxRes.Answer || []).filter(a => a.type === 15).forEach(a => currentDnsRecords.push({ type: 'MX', value: a.data, ttl: a.TTL }));
-        (txtRes.Answer || []).filter(a => a.type === 16).forEach(a => currentDnsRecords.push({ type: 'TXT', value: a.data.replace(/^"|"$/g, ''), ttl: a.TTL }));
-
-        renderDnsTable();
-        safeSetText('dns-count-val', `${currentDnsRecords.length} Records Verified`);
-
-        // Check Threat Intel for first resolved A record
-        const firstIpRecord = currentDnsRecords.find(r => r.type === 'A');
-        if (firstIpRecord) {
-          checkThreatIntel(firstIpRecord.value);
-        } else {
-          checkThreatIntel(null);
-        }
-
-        const spfRecord = currentDnsRecords.find(r => r.type === 'TXT' && r.value.includes('spf1'));
-        const dmarcRecord = (dmarcRes.Answer || []).find(a => a.data && a.data.includes('DMARC1'));
-
-        setBadge('spf-badge', !!spfRecord, '✓ CONFIGURED', '✕ MISSING');
-        setBadge('dmarc-badge', !!dmarcRecord, '✓ CONFIGURED', '✕ MISSING');
-        safeSetText('email-compliance-val', `${(spfRecord ? 1 : 0) + (dmarcRecord ? 1 : 0)} / 2`);
-
-        const subResult = await fetchSubdomains(domain);
-        const subList = document.getElementById('subdomain-list');
-        if (subResult.ok) {
-          safeSetText('subdomain-count', `${subResult.subdomains.length} Discovered`);
-          if (subList) {
-            subList.innerHTML = subResult.subdomains.length > 0 ? subResult.subdomains.map(sub => `
-              <li class="bg-slate-50 dark:bg-slate-900/60 p-2 rounded border border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <span class="truncate">${sub}</span>
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-300 font-bold">CERT LOG</span>
-              </li>
-            `).join('') : `<li class="col-span-full text-center text-slate-400 py-2">No public subdomains indexed.</li>`;
-          }
-        } else {
-          safeSetText('subdomain-count', `Unavailable`);
-          if (subList) subList.innerHTML = `<li class="col-span-full text-center text-amber-500 py-4">⚠ ${subResult.reason}</li>`;
-        }
-
-        const httpsResult = await checkHttpsAndHeaders(domain);
-        const ageResult = await fetchDomainAge(domain);
-
-        const trust = computeTrustScore(spfRecord, dmarcRecord, httpsResult, ageResult);
-        const trustValEl = document.getElementById('trust-score-val');
-        if (trustValEl) {
-          trustValEl.innerText = trust.score;
-          trustValEl.className = `text-3xl font-black ${trust.colorClass}`;
-        }
-        safeSetText('trust-score-status', trust.verdict);
-
-        // Populate Domain Trust Intelligence (RDAP Panel)
-        const rdapTag = document.getElementById('rdap-status-tag');
-        const rdapFlag = document.getElementById('rdap-flag-val');
-        const trustFactorsContainer = document.getElementById('trust-factors-container');
-
-        if (ageResult.ok) {
-          if (rdapTag) { rdapTag.innerText = 'VERIFIED'; rdapTag.className = 'text-[10px] font-mono text-emerald-400 font-bold'; }
-          safeSetText('rdap-reg-date-val', new Date(ageResult.regDate).toLocaleDateString());
-          safeSetText('rdap-age-val', `${(ageResult.ageDays / 365).toFixed(1)} Yrs (${ageResult.ageDays}d)`);
-          if (rdapFlag) {
-            const isYoung = ageResult.ageDays < 90;
-            rdapFlag.innerText = isYoung ? 'HIGH RISK (NEW)' : 'LOW RISK (ESTABLISHED)';
-            rdapFlag.className = `font-bold ${isYoung ? 'text-rose-500' : 'text-emerald-400'}`;
-          }
-        } else {
-          if (rdapTag) { rdapTag.innerText = 'RESTRICTED'; rdapTag.className = 'text-[10px] font-mono text-amber-400 font-bold'; }
-          safeSetText('rdap-reg-date-val', 'N/A');
-          safeSetText('rdap-age-val', 'N/A');
-          if (rdapFlag) { rdapFlag.innerText = 'UNVERIFIED (RDAP CORS)'; rdapFlag.className = 'font-bold text-amber-400'; }
-        }
-
-        if (trustFactorsContainer && trust.factors) {
-          trustFactorsContainer.innerHTML = trust.factors.map(f => `
-            <div class="flex items-center justify-between text-[11px] font-mono">
-              <span class="text-slate-400">${f.label}:</span>
-              <span class="font-bold ${f.pass === true ? 'text-emerald-400' : f.pass === false ? 'text-rose-400' : 'text-amber-400'}">${f.note}</span>
-            </div>
-          `).join('');
-        }
-
-        renderCompliance(spfRecord, dmarcRecord, httpsResult);
-
-        let score = 40;
-        if (currentDnsRecords.some(r => r.type === 'A')) score += 20;
-        if (currentDnsRecords.some(r => r.type === 'MX')) score += 15;
-        if (spfRecord) score += 12;
-        if (dmarcRecord) score += 13;
-
-        safeSetText('score-val', score);
-        safeSetText('score-status', score >= 80 ? "Grade A (Hardened)" : score >= 60 ? "Grade B (Moderate Risk)" : "Grade C (Action Required)");
-        safeSetText('risk-val', score >= 80 ? "LOW" : score >= 60 ? "MEDIUM" : "HIGH");
-
-        // Calculate and Render Audit Delta (Diffing)
-        calculateAuditDelta(domain, score, currentDnsRecords);
-
-        appendLog(`[COMPLETE] Security Audit completed for ${domain}. Score: ${score}/100`, 'success');
-        showToast(`Audit finished for ${domain}`);
-
-      } catch (err) {
-        appendLog(`[ERROR] Audit query failed: ${err.message}`, 'error');
-      } finally {
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = `<span>RUN AUDIT</span><i data-lucide="zap" class="w-3.5 h-3.5"></i>`;
-        }
-        lucide.createIcons();
-      }
-    }
-
-    function exportJSON() {
-      const domainInput = document.getElementById('target-domain');
-      const domain = (domainInput && domainInput.value) ? domainInput.value : 'nuex-audit';
-      const scoreVal = document.getElementById('score-val');
-      
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
-        domain: domain,
-        timestamp: new Date().toISOString(),
-        score: scoreVal ? scoreVal.innerText : 'N/A',
-        dnsRecords: currentDnsRecords
-      }, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `nuex-audit-${domain}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    function exportPDF() { window.print(); }
-  </script>
-</body>
-</html>
